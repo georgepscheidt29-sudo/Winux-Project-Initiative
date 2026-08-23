@@ -7,9 +7,9 @@ pub enum Command {
     Pwd,
     Clear,
     Cd {path: PathBuf},
-    Ls {args: Option<String>, path: Option<PathBuf>},
+    Ls {args: Option<String>, path: Option<PathBuf>}, //TODO Implement args
     Exit,
-    Unrecognized,
+    Unrecognized, //TODO Implement specified command on final message, should read Could not recognize command {attempted command}
 }
 
 pub(crate) struct Result {
