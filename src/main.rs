@@ -1,6 +1,7 @@
 mod command;
 mod parser;
 mod helper;
+mod error;
 
 use std::io;
 use std::env;
