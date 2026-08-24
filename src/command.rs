@@ -1,7 +1,5 @@
 use std::{env, fs};
 use std::path::PathBuf;
-use crate::helper;
-use crate::helper::resolve_path;
 
 pub enum Command {
     Pwd,
@@ -26,7 +24,7 @@ pub(crate) fn handle_pwd() {
 }
 
 pub(crate) fn handle_ls(args: Option<String>, path: Option<PathBuf>){
-    let mut current_path = PathBuf::new();
+    let current_path: PathBuf;
     match path {
         Some(path) => {
             current_path = PathBuf::from(path);

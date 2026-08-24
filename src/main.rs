@@ -2,11 +2,9 @@ mod command;
 mod parser;
 mod helper;
 
-use std::cmp::PartialEq;
 use std::io;
 use std::env;
 use std::io::Write;
-use crate::command::Command;
 use crate::parser::{act_on_command, match_command};
 
 fn main() {
