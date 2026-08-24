@@ -1,3 +1,4 @@
+use std::env::current_dir;
 use crate::command::{handle_ls, Command, Result, handle_pwd, handle_cd, handle_exit, handle_clear, handle_unrecognized};
 use crate::helper::resolve_path;
 
@@ -14,7 +15,7 @@ pub(crate) fn match_command( raw_cmd: (String, Vec<String>)) -> Command {
 
     match cmd.as_str() {
         "pwd" => Command::Pwd,
-        "cd" => Command::Cd {path: resolve_path(params.get(0).clone()).expect("No path provided, did you mean to use pwd instead?")},
+        "cd" => Command::Cd {path: resolve_path(params.get(0).clone()).unwrap_or_else(|| current_dir().unwrap())},
         "ls" => Command::Ls {args: params.get(0).clone().cloned(), path: resolve_path(params.get(1).clone()) },
         "clear" => Command::Clear,
         "exit" => Command::Exit,

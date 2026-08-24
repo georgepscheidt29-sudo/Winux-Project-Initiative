@@ -1,4 +1,5 @@
 use std::{env, fs};
+use std::env::current_dir;
 use std::path::PathBuf;
 
 pub enum Command {
@@ -24,13 +25,9 @@ pub(crate) fn handle_pwd() {
 }
 
 pub(crate) fn handle_ls(args: Option<String>, path: Option<PathBuf>){
-    let current_path: PathBuf;
-    match path {
-        Some(path) => {
-            current_path = PathBuf::from(path);
-        }
-        None => {current_path = env::current_dir().unwrap();}
-    }
+
+    let current_path: PathBuf = path.unwrap_or_else(|| env::current_dir().unwrap_or_default());
+
 
     let dir_list: Vec<String> = fs::read_dir(current_path.clone()).unwrap().map(|r| r.unwrap().file_name().to_str().unwrap().to_string()).collect();
 
