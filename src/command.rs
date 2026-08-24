@@ -1,5 +1,4 @@
 use std::{env, fs, path};
-use std::env::current_dir;
 use std::path::PathBuf;
 
 pub enum Command {
@@ -24,7 +23,7 @@ pub(crate) fn handle_pwd() {
     println!("Current Directory: {}", env::current_dir().unwrap().display());
 }
 
-pub(crate) fn handle_ls(args: Option<String>, path: Option<PathBuf>){
+pub(crate) fn handle_ls(_args: Option<String>, path: Option<PathBuf>){
 
     let current_path: PathBuf = path.unwrap_or_else(|| env::current_dir().unwrap_or_default());
 
@@ -43,5 +42,4 @@ pub(crate) fn handle_unrecognized() {
     print!("Unrecognized command");
 }
 pub(crate) fn handle_exit() {
-    return
 }
