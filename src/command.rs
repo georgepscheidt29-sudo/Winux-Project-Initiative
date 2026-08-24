@@ -1,6 +1,6 @@
 use std::{env, fs, path};
-use std::env::current_dir;
 use std::path::PathBuf;
+use crate::error::result_handler;
 
 pub enum Command {
     Pwd,
@@ -24,12 +24,14 @@ pub(crate) fn handle_pwd() {
     println!("Current Directory: {}", env::current_dir().unwrap().display());
 }
 
-pub(crate) fn handle_ls(args: Option<String>, path: Option<PathBuf>){
+pub(crate) fn handle_ls(_args: Option<String>, path: Option<PathBuf>){
 
     let current_path: PathBuf = path.unwrap_or_else(|| env::current_dir().unwrap_or_default());
 
-
-    let dir_list: Vec<String> = fs::read_dir(current_path.clone()).unwrap().map(|r| r.unwrap().file_name().to_str().unwrap().to_string()).collect(); //TODO Fix error handling, unwrap_or_else does not handle panics
+    let dir_list: Vec<String> =  match result_handler(fs::read_dir(current_path.clone())){
+        Some(dir) => dir.map(|r| r.unwrap().file_name().to_str().unwrap().to_string()).collect(),
+        None => return
+    };
 
     println!("Path: {}", path::absolute(current_path).unwrap().display());
     dir_list.iter().for_each(|dir|{println!("- {}", dir);});
@@ -43,5 +45,4 @@ pub(crate) fn handle_unrecognized() {
     print!("Unrecognized command");
 }
 pub(crate) fn handle_exit() {
-    return
 }
