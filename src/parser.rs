@@ -19,7 +19,7 @@ pub(crate) fn match_command( raw_cmd: (String, Vec<String>)) -> Command {
         "ls" => Command::Ls {args: params.first().cloned(), path: resolve_path(params.last()) },
         "clear" => Command::Clear,
         "exit" => Command::Exit,
-        _ => Command::Unrecognized
+        _ => Command::Unrecognized{cmd.to_string_lossy()}
     }
 }
 

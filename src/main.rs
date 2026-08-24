@@ -53,5 +53,4 @@ fn main() {
     }
 
     println!("Exiting Winux Shell...");
-    helper::sleep();
 }

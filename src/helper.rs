@@ -11,5 +11,4 @@ pub(crate) fn resolve_path(path: Option<&String>) -> Option<PathBuf> {
         Some(path) => Option::from(PathBuf::from(path)),
         None => {None}
     }
-
 }

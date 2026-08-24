@@ -1,6 +1,6 @@
-use std::{env, fs, path};
+use std::{env, fs, path, io};
 use std::path::PathBuf;
-use crate::error::result_handler;
+use crate::error::{result_handler, WinuxError};
 
 pub enum Command {
     Pwd,
@@ -8,7 +8,7 @@ pub enum Command {
     Cd {path: PathBuf},
     Ls {args: Option<String>, path: Option<PathBuf>}, //TODO Implement args
     Exit,
-    Unrecognized, //TODO Implement specified command on final message, should read Could not recognize command {attempted command}
+    Unrecognized {cmd: String},
 }
 
 pub(crate) struct Result {
@@ -17,7 +17,7 @@ pub(crate) struct Result {
 }
 
 pub(crate) fn handle_cd(path: &PathBuf) {
-    env::set_current_dir(path).unwrap_or_else(|_| print!("Could not find specified directory"))
+    env::set_current_dir(path).unwrap_or_else(|_| WinuxError::PathNotFound{path: path.to_path_buf()}.message())
 }
 
 pub(crate) fn handle_pwd() {
@@ -28,21 +28,31 @@ pub(crate) fn handle_ls(_args: Option<String>, path: Option<PathBuf>){
 
     let current_path: PathBuf = path.unwrap_or_else(|| env::current_dir().unwrap_or_default());
 
-    let dir_list: Vec<String> =  match result_handler(fs::read_dir(current_path.clone())){
-        Some(dir) => dir.map(|r| r.unwrap().file_name().to_str().unwrap().to_string()).collect(),
-        None => return
-    };
+    let mut dir_list = Vec::new();
 
-    println!("Path: {}", path::absolute(current_path).unwrap().display());
-    dir_list.iter().for_each(|dir|{println!("- {}", dir);});
+    match fs::read_dir(&current_path) {
+        Ok(entries) => {
+            for entry in entries {
+                match entry {
+                    Ok(e) => dir_list.push(e.file_name().to_string_lossy().into_owned()),
+                    Err(err) => WinuxError::SystemError { err }.message(),
+                }
+            }
+            println!("Path: {}", path::absolute(current_path).unwrap().display());
+            dir_list.iter().for_each(|dir| {println!("- {}", dir);});
+        }
+        Err(_) => {
+            WinuxError::PathNotFound { path: current_path.clone() }.message();
+        }
+    }
 }
 
 pub(crate) fn handle_clear(){
     print!("\x1B[2J\x1B[1;1H")
 }
 
-pub(crate) fn handle_unrecognized() {
-    print!("Unrecognized command");
+pub(crate) fn handle_unrecognized(cmd: String) {
+    WinuxError::UnrecognizedCommand{cmd}.message();
 }
 pub(crate) fn handle_exit() {
 }
