@@ -15,8 +15,8 @@ pub(crate) fn match_command( raw_cmd: (String, Vec<String>)) -> Command {
 
     match cmd.as_str() {
         "pwd" => Command::Pwd,
-        "cd" => Command::Cd {path: resolve_path(params.get(0).clone()).unwrap_or_else(|| current_dir().unwrap())},
-        "ls" => Command::Ls {args: params.get(0).clone().cloned(), path: resolve_path(params.get(1).clone()) },
+        "cd" => Command::Cd {path: resolve_path(params.first().clone()).unwrap_or_else(|| current_dir().unwrap())},
+        "ls" => Command::Ls {args: params.first().cloned(), path: resolve_path(params.last().clone()) },
         "clear" => Command::Clear,
         "exit" => Command::Exit,
         _ => Command::Unrecognized

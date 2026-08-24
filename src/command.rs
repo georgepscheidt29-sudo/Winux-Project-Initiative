@@ -1,4 +1,4 @@
-use std::{env, fs};
+use std::{env, fs, path};
 use std::env::current_dir;
 use std::path::PathBuf;
 
@@ -29,9 +29,9 @@ pub(crate) fn handle_ls(args: Option<String>, path: Option<PathBuf>){
     let current_path: PathBuf = path.unwrap_or_else(|| env::current_dir().unwrap_or_default());
 
 
-    let dir_list: Vec<String> = fs::read_dir(current_path.clone()).unwrap().map(|r| r.unwrap().file_name().to_str().unwrap().to_string()).collect();
+    let dir_list: Vec<String> = fs::read_dir(current_path.clone()).unwrap().map(|r| r.unwrap().file_name().to_str().unwrap().to_string()).collect(); //TODO Fix error handling, unwrap_or_else does not handle panics
 
-    println!("Path: {}", current_path.display());
+    println!("Path: {}", path::absolute(current_path).unwrap().display());
     dir_list.iter().for_each(|dir|{println!("- {}", dir);});
 }
 
