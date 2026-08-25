@@ -1,6 +1,6 @@
 use std::fmt::Display;
 use std::path::PathBuf;
-use std::io;
+use std::{io, path};
 
 pub(crate) enum WinuxError {
     PathNotFound {path: PathBuf},
@@ -11,7 +11,7 @@ pub(crate) enum WinuxError {
 impl WinuxError {
     pub(crate) fn message(&self) {
         match self {
-            WinuxError::PathNotFound {path} => eprintln!("Could not find path {}", path.display()),
+            WinuxError::PathNotFound {path} => eprintln!("Could not find path {}", path::absolute(path).unwrap_or_else(|_| {path.to_path_buf()}).display()),
             WinuxError::SystemError {err} => eprintln!("{}", err),
             WinuxError::UnrecognizedCommand {cmd} => eprintln!("Unable to recognize command: {}", cmd)
         }

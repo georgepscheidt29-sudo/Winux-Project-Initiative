@@ -1,5 +1,6 @@
 use std::env::current_dir;
-use crate::command::{handle_ls, Command, Result, handle_pwd, handle_cd, handle_exit, handle_clear, handle_unrecognized};
+use crate::command::{Command, Result};
+use crate::command;
 use crate::helper::resolve_path;
 
 pub(crate) fn command_parser(command:String) -> (String, Vec<String>) {
@@ -19,17 +20,19 @@ pub(crate) fn match_command( raw_cmd: (String, Vec<String>)) -> Command {
         "ls" => Command::Ls {args: params.first().cloned(), path: resolve_path(params.last()) },
         "clear" => Command::Clear,
         "exit" => Command::Exit,
-        _ => Command::Unrecognized{cmd.to_string_lossy()}
+        "" => Command::Empty,
+        _ => Command::Unrecognized{ cmd: cmd.to_string()}
     }
 }
 
 pub(crate) fn act_on_command(cmd: Command) -> Result{
     match cmd {
-        Command::Pwd => Result {exec: handle_pwd(), status: 0},
-        Command::Cd {path} => Result {exec: handle_cd(&path), status: 0},
-        Command::Ls {args, path} => Result {exec: handle_ls(args, path), status: 0},
-        Command::Clear => Result {exec: handle_clear(), status: 0},
-        Command::Exit => Result {exec: handle_exit(), status: 1},
-        Command::Unrecognized => Result {exec: handle_unrecognized(), status: 0}
+        Command::Pwd => Result {exec: command::handle_pwd(), status: 0},
+        Command::Cd {path} => Result {exec: command::handle_cd(&path), status: 0},
+        Command::Ls {args, path} => Result {exec: command::handle_ls(args, path), status: 0},
+        Command::Clear => Result {exec: command::handle_clear(), status: 0},
+        Command::Exit => Result {exec: command::handle_exit(), status: 1},
+        Command::Empty => Result {exec: command::handle_empty(), status: 0},
+        Command::Unrecognized {cmd} => Result {exec: command::handle_unrecognized(cmd), status: 0}
     }
 }

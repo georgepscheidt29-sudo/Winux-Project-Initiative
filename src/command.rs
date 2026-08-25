@@ -1,6 +1,6 @@
-use std::{env, fs, path, io};
+use std::{env, fs, path};
 use std::path::PathBuf;
-use crate::error::{result_handler, WinuxError};
+use crate::error::{WinuxError};
 
 pub enum Command {
     Pwd,
@@ -9,6 +9,7 @@ pub enum Command {
     Ls {args: Option<String>, path: Option<PathBuf>}, //TODO Implement args
     Exit,
     Unrecognized {cmd: String},
+    Empty
 }
 
 pub(crate) struct Result {
@@ -55,4 +56,8 @@ pub(crate) fn handle_unrecognized(cmd: String) {
     WinuxError::UnrecognizedCommand{cmd}.message();
 }
 pub(crate) fn handle_exit() {
+}
+
+pub(crate) fn handle_empty(){
+    print!("")
 }
