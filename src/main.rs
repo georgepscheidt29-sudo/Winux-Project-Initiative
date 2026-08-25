@@ -41,14 +41,14 @@ fn main() {
 
         let parsed_command = parser::command_parser(command.clone());
         
-        let result = act_on_command(match_command(parsed_command));
+        let run_result = act_on_command(match_command(parsed_command));
         
         println!();
         io::stdout().flush().unwrap();
         helper::sleep();
         command.clear();
         
-        if result.run_status == 1 {
+        if run_result.run_status == 1 {
             break;
         }
     }

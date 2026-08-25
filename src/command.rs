@@ -12,53 +12,46 @@ pub enum Command {
     Empty
 }
 
-pub struct Result {
+pub struct RunResult {
     pub exec: (),
     pub run_status: i8
 }
 
  impl Command {
-    pub fn handle(&self) -> Result {
+    pub fn handle(&self) -> Result<_, WinuxError> {
         match self {
             Command::Cd {path} => {
-                Result{exec: env::set_current_dir(path).unwrap_or_else(|_| WinuxError::PathNotFound{path: path.to_path_buf()}.message()), run_status: 0}
+                env::set_current_dir(path)
+                    .map_err(|e| WinuxError::SystemError{err: e})?
             },
 
             Command::Pwd => {
-                Result {exec: println!("Current Directory: {}", env::current_dir().unwrap().display()), run_status: 0}
+                let cur_dir: PathBuf = env::current_dir()
+                    .map_err(|e| WinuxError::SystemError{err: e})?
+
+                println!("Current Directory: {}", cur_dir.display())
+                Ok(())
             },
 
             Command::Clear => {
-                Result{ exec: print!("\x1B[2J\x1B[1;1H"), run_status: 0}
+                print!("\x1B[2J\x1B[1;1H");
+                Ok(())
             },
 
             Command::Ls { args, path } => {
                 let current_path: PathBuf = match path {
-                    Some(p) => match p.to_path_buf() {
-                        Ok(pb) => pb,
-                        Err(e) => WinuxError::SystemError { err }.message(),
-                    },
-                    None => env::current_dir()
-                }
+                    Some(p) => p.to_path_buf(),
+                    None => env::current_dir().map_err(|e| WinuxError::SystemError { err: e })?
+                };
+                
+                let entries = fs::read_dir(&current_path)
+                    .map_err(|e| WinuxError::SystemError { err: e })?;
 
                 let mut dir_list = Vec::new();
-                Result{exec: 
-                    match fs::read_dir(&current_path) {
-                    Ok(entries) => {
-                        for entry in entries {
-                            match entry {
-                                Ok(e) => dir_list.push(e.file_name().to_string_lossy().into_owned()),
-                                Err(err) => WinuxError::SystemError { err }.message(),
-                            }
-                        }
-                        println!("Path: {}", path::absolute(current_path).unwrap().display());
-                        dir_list.iter().for_each(|dir| {println!("- {}", dir);});
-                    }
-                    Err(_) => {
-                        WinuxError::PathNotFound { path: current_path.clone() }.message();
-                    }
-                },
-                run_status: 0
+                
+                for entry in entries {
+                    let e = entry.map_err(|e| WinuxError::SystemError {err: e});
+                    dir_list.push(e.file_name().to_string_lossy().into_owned())
                 }
 
             },

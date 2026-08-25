@@ -1,6 +1,5 @@
 use std::env::current_dir;
-use crate::command::{Command, Result};
-use crate::command;
+use crate::command::{Command, RunResult};
 use crate::helper::resolve_path;
 
 pub fn command_parser(command:String) -> (String, Vec<String>) {
@@ -29,6 +28,6 @@ pub fn match_args(params: Vec<String>) {
 
 }
 
-pub fn act_on_command(cmd: Command) -> Result{
+pub fn act_on_command(cmd: Command) -> RunResult{
     cmd.handle()
 }
