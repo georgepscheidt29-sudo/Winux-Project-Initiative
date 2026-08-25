@@ -2,6 +2,7 @@ mod command;
 mod parser;
 mod helper;
 mod error;
+mod command_impl;
 
 use std::io;
 use std::env;
@@ -47,7 +48,7 @@ fn main() {
         helper::sleep();
         command.clear();
         
-        if result.status == 1 {
+        if result.run_status == 1 {
             break;
         }
     }

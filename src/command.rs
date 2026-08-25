@@ -12,52 +12,67 @@ pub enum Command {
     Empty
 }
 
-pub(crate) struct Result {
-    pub(crate) exec: (),
-    pub(crate) status: i8
+pub struct Result {
+    pub exec: (),
+    pub run_status: i8
 }
 
-pub(crate) fn handle_cd(path: &PathBuf) {
-    env::set_current_dir(path).unwrap_or_else(|_| WinuxError::PathNotFound{path: path.to_path_buf()}.message())
-}
+ impl Command {
+    pub fn handle(&self) -> Result {
+        match self {
+            Command::Cd {path} => {
+                Result{exec: env::set_current_dir(path).unwrap_or_else(|_| WinuxError::PathNotFound{path: path.to_path_buf()}.message()), run_status: 0}
+            },
 
-pub(crate) fn handle_pwd() {
-    println!("Current Directory: {}", env::current_dir().unwrap().display());
-}
+            Command::Pwd => {
+                Result {exec: println!("Current Directory: {}", env::current_dir().unwrap().display()), run_status: 0}
+            },
 
-pub(crate) fn handle_ls(_args: Option<String>, path: Option<PathBuf>){
+            Command::Clear => {
+                Result{ exec: print!("\x1B[2J\x1B[1;1H"), run_status: 0}
+            },
 
-    let current_path: PathBuf = path.unwrap_or_else(|| env::current_dir().unwrap_or_default());
-
-    let mut dir_list = Vec::new();
-
-    match fs::read_dir(&current_path) {
-        Ok(entries) => {
-            for entry in entries {
-                match entry {
-                    Ok(e) => dir_list.push(e.file_name().to_string_lossy().into_owned()),
-                    Err(err) => WinuxError::SystemError { err }.message(),
+            Command::Ls { args, path } => {
+                let current_path: PathBuf = match path {
+                    Some(p) => match p.to_path_buf() {
+                        Ok(pb) => pb,
+                        Err(e) => WinuxError::SystemError { err }.message(),
+                    },
+                    None => env::current_dir()
                 }
-            }
-            println!("Path: {}", path::absolute(current_path).unwrap().display());
-            dir_list.iter().for_each(|dir| {println!("- {}", dir);});
-        }
-        Err(_) => {
-            WinuxError::PathNotFound { path: current_path.clone() }.message();
+
+                let mut dir_list = Vec::new();
+                Result{exec: 
+                    match fs::read_dir(&current_path) {
+                    Ok(entries) => {
+                        for entry in entries {
+                            match entry {
+                                Ok(e) => dir_list.push(e.file_name().to_string_lossy().into_owned()),
+                                Err(err) => WinuxError::SystemError { err }.message(),
+                            }
+                        }
+                        println!("Path: {}", path::absolute(current_path).unwrap().display());
+                        dir_list.iter().for_each(|dir| {println!("- {}", dir);});
+                    }
+                    Err(_) => {
+                        WinuxError::PathNotFound { path: current_path.clone() }.message();
+                    }
+                },
+                run_status: 0
+                }
+
+            },
+
+            Command::Unrecognized {cmd} => {
+                Result{exec: WinuxError::UnrecognizedCommand{cmd: cmd.to_string()}.message(), run_status: 0}
+            },
+
+            Command::Empty => {
+                Result{exec: print!(""), run_status: 0}
+            },
+
+            Command::Exit => Result {exec: print!(""), run_status: 1}
+
         }
     }
-}
-
-pub(crate) fn handle_clear(){
-    print!("\x1B[2J\x1B[1;1H")
-}
-
-pub(crate) fn handle_unrecognized(cmd: String) {
-    WinuxError::UnrecognizedCommand{cmd}.message();
-}
-pub(crate) fn handle_exit() {
-}
-
-pub(crate) fn handle_empty(){
-    print!("")
 }

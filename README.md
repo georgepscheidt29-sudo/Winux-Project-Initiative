@@ -31,3 +31,4 @@ Repository of the Winux Shell Initiative.
 
 - [ ] Implementation and refactoring from the standard input-output crate to the rustyline crate
 - [ ] Implementation of crossterm for keyboard events and terminal color (Just an idea, have to look into it and analyze if its actually what I have in mind)
+- [ ] Further development of current result struct, with detailed status and dynamic result behavior
