@@ -1,7 +1,8 @@
-use std::{env, fs, path};
+use std::{env, fs};
 use std::path::PathBuf;
 use crate::error::WinuxError;
 
+#[derive(PartialEq)]
 pub enum Command {
     Pwd,
     Clear,
@@ -12,6 +13,7 @@ pub enum Command {
     Empty
 }
 
+#[derive(PartialEq)]
 pub enum RunResult {
     Continue,
     Exit
@@ -20,7 +22,7 @@ pub enum RunResult {
 impl RunResult {
     pub fn evaluate(cmd: Command) -> RunResult {
         if cmd == Command::Exit {
-            return {RunResult::Exit}
+            return RunResult::Exit
         } else {
             return RunResult::Continue
         }
