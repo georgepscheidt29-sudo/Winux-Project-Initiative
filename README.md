@@ -23,6 +23,7 @@ Repository of the Winux Shell Initiative.
 --------------------------
 ## Near future
 
+- [ ] Refactor the system to build an error-friendly framework
 - [ ] Implementation of simple argument parser and matcher
 - [ ] Main arguments documentation for currently supported commands, probably in a new `args.rs` file
 - [ ] Implementation of filesystem commands such as mkdir, rm, cat, touch, mv, cp

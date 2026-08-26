@@ -29,9 +29,32 @@ pub fn match_args(params: Vec<String>) {
 
 }
 
+impl Command {
+    pub fn to_run_result(&self) -> RunResult {
+        if *self == Command::Exit {
+            RunResult::Exit
+        } else {
+            RunResult::Continue
+        }
+
+    }
+}
+
+impl WinuxError {
+    pub fn to_run_result(&self) -> RunResult {
+        return RunResult::Continue
+    }
+}
+
 pub fn act_on_command(cmd: Result<Command, WinuxError>) -> RunResult{
     match cmd {
-        Ok(c) => c.handle(),
-        Err(we) => we.message()
+        Ok(c) => {
+            c.handle();
+            return c.to_run_result()
+        },
+        Err(we) => {
+            we.message();
+            return we.to_run_result()
+        }
     }
 }

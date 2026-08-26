@@ -20,7 +20,7 @@ pub enum RunResult {
 }
 
 impl RunResult {
-    pub fn evaluate(cmd: Command) -> RunResult {
+    pub fn evaluateCmd(cmd: Command) -> RunResult {
         if cmd == Command::Exit {
             return RunResult::Exit
         } else {
