@@ -1,6 +1,7 @@
 use std::env::current_dir;
 use crate::command::{Command, RunResult};
 use crate::helper::resolve_path;
+use crate::error::WinuxError;
 
 pub fn command_parser(command:String) -> (String, Vec<String>) {
     let parsed_command_raw: Vec<&str> = command.split(" ").collect();
@@ -28,6 +29,9 @@ pub fn match_args(params: Vec<String>) {
 
 }
 
-pub fn act_on_command(cmd: Command) -> RunResult{
-    cmd.handle()
+pub fn act_on_command(cmd: Result<Command, WinuxError>) -> RunResult{
+    match cmd {
+        Ok(c) => c.unwrap().handle(),
+        WinuxEror(we) => we.unwrap_or_else(WinuxEror::DefaultError).message()
+    }
 }
