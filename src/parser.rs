@@ -31,7 +31,7 @@ pub fn match_args(params: Vec<String>) {
 
 pub fn act_on_command(cmd: Result<Command, WinuxError>) -> RunResult{
     match cmd {
-        Ok(c) => c.unwrap().handle(),
-        WinuxEror(we) => we.unwrap_or_else(WinuxEror::DefaultError).message()
+        Ok(c) => c.handle(),
+        Err(we) => we.message()
     }
 }
