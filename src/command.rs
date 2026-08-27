@@ -6,8 +6,8 @@ use crate::error::WinuxError;
 pub enum Command {
     Pwd,
     Clear,
-    Cd {path: PathBuf},
-    Ls {args: Option<String>, path: Option<PathBuf>}, //TODO Implement args
+    Cd {args: Vec<String>},
+    Ls {args: Option<Vec<String>>},
     Exit,
     Unrecognized {cmd: String},
     Empty

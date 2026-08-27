@@ -8,6 +8,7 @@ use std::io;
 use std::env;
 use std::io::Write;
 use crate::parser::{act_on_command, match_command};
+use crate::command::RunResult;
 
 fn main() {
     println!("            ╔══════════════════════════════════════════════════════════════╗
@@ -48,9 +49,10 @@ fn main() {
         helper::sleep();
         command.clear();
         
-        if run_result.run_status == 1 {
+        if run_result == RunResult::Exit {
             break;
         }
+
     }
 
     println!("Exiting Winux Shell...");
