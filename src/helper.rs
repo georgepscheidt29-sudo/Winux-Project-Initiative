@@ -3,7 +3,7 @@ use std::thread;
 use std::time::Duration;
 
 pub fn sleep(){
-    thread::sleep(Duration::new(1,0));
+    thread::sleep(Duration::from_millis(500));
 }
 
 pub fn resolve_path(path: Option<&String>) -> Option<PathBuf> {
