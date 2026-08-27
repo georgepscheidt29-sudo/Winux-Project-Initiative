@@ -57,6 +57,11 @@ impl Executable for LsStruct {
             dir_list.push(e.file_name().to_string_lossy().into_owned());
 
         }
+        println!("{}", current_path.display());
+        dir_list.iter().for_each( |d|
+            println!("- {}", d)
+        );
+
         Ok(RunResult::Continue)
     }
 }
