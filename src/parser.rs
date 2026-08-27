@@ -1,7 +1,11 @@
-use std::env::current_dir;
+use std::path::PathBuf;
 use crate::command::{Command, RunResult};
-use crate::helper::resolve_path;
+use crate::command_impl::command_builder::BuiltCommand;
+use crate::command_impl::command_builder::BuiltCommand::BuiltClear;
+use crate::command_impl::file_sys::{CdStruct, LsStruct, PwdStruct};
+use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, UnrecognisedStruct};
 use crate::error::WinuxError;
+use crate::helper::{resolve_args_and_path, resolve_path_or_none};
 
 pub fn command_parser(command:String) -> (String, Vec<String>) {
     let parsed_command_raw: Vec<&str> = command.split(" ").collect();
@@ -16,8 +20,8 @@ pub fn match_command( raw_cmd: (String, Vec<String>)) -> Command {
 
     match cmd.as_str() {
         "pwd" => Command::Pwd,
-        "cd" => Command::Cd {path: resolve_path(params.first()).unwrap_or_else(|| current_dir().unwrap())},
-        "ls" => Command::Ls {args: params.first().cloned(), path: resolve_path(params.last()) },
+        "cd" => Command::Cd {args: params},
+        "ls" => Command::Ls {args:  params},
         "clear" => Command::Clear,
         "exit" => Command::Exit,
         "" => Command::Empty,
@@ -25,36 +29,33 @@ pub fn match_command( raw_cmd: (String, Vec<String>)) -> Command {
     }
 }
 
-pub fn match_args(params: Vec<String>) {
-
-}
-
-impl Command {
-    pub fn to_run_result(&self) -> RunResult {
-        if *self == Command::Exit {
-            RunResult::Exit
-        } else {
-            RunResult::Continue
-        }
-
-    }
-}
-
-impl WinuxError {
-    pub fn to_run_result(&self) -> RunResult {
-        return RunResult::Continue
-    }
-}
-
-pub fn act_on_command(cmd: Result<Command, WinuxError>) -> RunResult{
+pub fn build_command(cmd: Command) -> BuiltCommand {
     match cmd {
-        Ok(c) => {
-            c.handle();
-            return c.to_run_result()
-        },
-        Err(we) => {
-            we.message();
-            return we.to_run_result()
-        }
+        Command::Pwd => BuiltCommand::BuiltPwd(PwdStruct {}),
+
+        Command::Cd {args} => BuiltCommand::BuiltCd(CdStruct {
+            path: resolve_path_or_none(args.first() )}),
+
+        Command::Ls {args} => {
+            let possible_args: Option<String>= resolve_args_and_path(&args).0;
+            let possible_path: Option<String> = resolve_args_and_path(&args).1;
+            let resolved_path: Option<PathBuf>;
+            match possible_path {
+                Some(p) => { resolved_path = resolve_path_or_none(Some(&p)); },
+                None => { resolved_path = None; }
+            }
+
+            BuiltCommand::BuiltLs(LsStruct {
+                args: possible_args,
+                path: resolved_path,
+            }) },
+
+        Command::Clear => {BuiltClear(ClearStruct {})},
+
+        Command::Exit => BuiltCommand::BuiltExit(ExitStruct {}),
+
+        Command::Empty => BuiltCommand::BuiltEmpty(EmptyStruct {}),
+
+        Command::Unrecognized {cmd} => BuiltCommand::BuiltUnrecognized(UnrecognisedStruct{cmd: cmd.to_string()}),
     }
 }

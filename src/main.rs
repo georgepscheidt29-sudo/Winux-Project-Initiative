@@ -7,8 +7,8 @@ mod command_impl;
 use std::io;
 use std::env;
 use std::io::Write;
-use crate::parser::{act_on_command, match_command};
-use crate::command::RunResult;
+use crate::parser::{match_command, command_parser, build_command};
+use crate::command::{Command, RunResult};
 
 fn main() {
     println!("            ╔══════════════════════════════════════════════════════════════╗
@@ -40,20 +40,27 @@ fn main() {
 
         command = command.trim().to_string();
 
-        let parsed_command = parser::command_parser(command.clone());
+        let cmd: Command = match_command(command_parser(command.clone()));
         
-        let run_result = act_on_command(match_command(parsed_command));
+        let built_command = build_command(cmd);
+        let run_result = built_command.execute_struct().unwrap_or_else(|e| {
+            e.message();
+            RunResult::Continue
+        });
+        
         
         println!();
         io::stdout().flush().unwrap();
-        helper::sleep();
         command.clear();
         
         if run_result == RunResult::Exit {
             break;
+        } else {
+            helper::sleep();
         }
 
     }
 
     println!("Exiting Winux Shell...");
+    helper::sleep();
 }
