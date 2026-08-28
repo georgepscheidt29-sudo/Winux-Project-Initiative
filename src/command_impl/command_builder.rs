@@ -1,4 +1,4 @@
-use crate::command::{RunResult};
+use crate::run_result::{RunResult};
 use crate::command_impl::{general_use, file_sys};
 use crate::error::WinuxError;
 

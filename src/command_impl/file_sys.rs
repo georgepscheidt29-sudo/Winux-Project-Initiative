@@ -1,7 +1,7 @@
 use std::{env, fs};
 use std::fs::DirEntry;
 use std::path::PathBuf;
-use crate::command::{RunResult};
+use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
 use crate::helper::{filter_hidden_files, parse_read_dir};

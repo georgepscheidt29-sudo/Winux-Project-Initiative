@@ -1,4 +1,4 @@
-mod command;
+mod run_result;
 mod parser;
 mod helper;
 mod error;
@@ -7,8 +7,8 @@ mod command_impl;
 use std::io;
 use std::env;
 use std::io::Write;
-use crate::parser::{match_command, command_parser, build_command};
-use crate::command::{Command, RunResult};
+use crate::parser::{command_parser, build_command};
+use crate::run_result::{RunResult};
 
 fn main() {
     println!("            ╔══════════════════════════════════════════════════════════════╗
@@ -39,10 +39,8 @@ fn main() {
         io::stdin().read_line(&mut command).expect("Failed to read line");
 
         command = command.trim().to_string();
-
-        let cmd: Command = match_command(command_parser(command.clone()));
         
-        let built_command = build_command(cmd);
+        let built_command = build_command(command_parser(command.clone()));
         let run_result = built_command.execute_struct().unwrap_or_else(|e| {
             e.message();
             RunResult::Continue

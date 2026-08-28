@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use crate::command::{Command};
 use crate::command_impl::command_builder::BuiltCommand;
 use crate::command_impl::file_sys::{CdStruct, LsStruct, PwdStruct};
 use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, UnrecognisedStruct};
@@ -12,31 +11,19 @@ pub fn command_parser(command:String) -> (String, Vec<String>) {
     (parsed_command.remove(0), parsed_command)
 }
 
-pub fn match_command( raw_cmd: (String, Vec<String>)) -> Command {
+pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
     let cmd = raw_cmd.0.to_lowercase();
     let params = raw_cmd.1;
-
+    
     match cmd.as_str() {
-        "pwd" => Command::Pwd,
-        "cd" => Command::Cd {args: params},
-        "ls" => Command::Ls {args:  params},
-        "clear" => Command::Clear,
-        "exit" => Command::Exit,
-        "" => Command::Empty,
-        _ => Command::Unrecognized{ cmd: cmd.to_string()}
-    }
-}
+        "pwd" => BuiltCommand::BuiltPwd(PwdStruct {}),
 
-pub fn build_command(cmd: Command) -> BuiltCommand {
-    match cmd {
-        Command::Pwd => BuiltCommand::BuiltPwd(PwdStruct {}),
+        "cd" => BuiltCommand::BuiltCd(CdStruct {
+            path: resolve_path_or_none(params.first() )}),
 
-        Command::Cd {args} => BuiltCommand::BuiltCd(CdStruct {
-            path: resolve_path_or_none(args.first() )}),
-
-        Command::Ls {args} => {
-            let possible_args: Option<String>= resolve_args_and_path(&args).0;
-            let possible_path: Option<String> = resolve_args_and_path(&args).1;
+        "ls" => {
+            let possible_args: Option<String>= resolve_args_and_path(&params).0;
+            let possible_path: Option<String> = resolve_args_and_path(&params).1;
             let resolved_path: Option<PathBuf> = match possible_path {
                 Some(p) => { resolve_path_or_none(Some(&p)) },
                 None => { None }
@@ -47,12 +34,12 @@ pub fn build_command(cmd: Command) -> BuiltCommand {
                 path: resolved_path,
             }) },
 
-        Command::Clear => {BuiltCommand::BuiltClear(ClearStruct {})},
+        "clear" => {BuiltCommand::BuiltClear(ClearStruct {})},
 
-        Command::Exit => BuiltCommand::BuiltExit(ExitStruct {}),
+        "exit" => BuiltCommand::BuiltExit(ExitStruct {}),
 
-        Command::Empty => BuiltCommand::BuiltEmpty(EmptyStruct {}),
+        "" => BuiltCommand::BuiltEmpty(EmptyStruct {}),
 
-        Command::Unrecognized {cmd} => BuiltCommand::BuiltUnrecognized(UnrecognisedStruct{cmd: cmd.to_string()}),
+        _ => BuiltCommand::BuiltUnrecognized(UnrecognisedStruct{cmd: cmd.to_string()}),
     }
 }
