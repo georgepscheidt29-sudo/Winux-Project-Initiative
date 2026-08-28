@@ -85,17 +85,19 @@ impl Executable for LsStruct {
         let mut string_to_print: String = String::new();
 
         for i in 0..dir_list.len() {
-            if i%5 != 0 || i == 0{
+            if args.contains("l") {
+                string_to_print.push_str(&format!("- {}\n", dir_list[i]));
+
+            } else if i%5 != 0 || i == 0 {
                 string_to_print.push_str(&format!("- {}\t", dir_list[i]));
 
             } else if i != 0 {
                 string_to_print.push_str(&format!("- {}\n\n", dir_list[i]));
 
             }
-
         }
 
-        println!("{}",string_to_print);
+        println!("\n{}",string_to_print);
 
         Ok(RunResult::Continue)
     }
