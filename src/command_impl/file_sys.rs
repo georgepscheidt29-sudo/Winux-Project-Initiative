@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use crate::command::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
+use crate::helper::filter_hidden_files;
 
 pub(crate) struct PwdStruct {}
 
@@ -57,14 +58,16 @@ impl Executable for LsStruct {
             None => String::from("")
         };
 
-        let entries = fs::read_dir(&current_path)
+        let mut entries = fs::read_dir(&current_path)
             .map_err(|e| WinuxError::SystemError { err: e } )?;
-
+        
         let mut dir_list = Vec::new();
         
         if args.contains("a") {
             dir_list.push(String::from(".."));
             dir_list.push(String::from("."));
+        } else {
+            entries = filter_hidden_files(entries).map_err(|e| WinuxError::SystemError {err: e});
         }
 
         for entry in entries {
