@@ -26,11 +26,3 @@ impl WinuxError {
         }
     }
 }
-
-// Deprecated, will possibly be reimplemented later
-pub fn result_handler<T, E>(res: Result<T, E>) -> Option<T>
-where E: Display,
-{
-    res.inspect_err(|e| eprintln!("Error encountered: {}", e))
-       .ok()
-}

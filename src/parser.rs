@@ -1,10 +1,8 @@
 use std::path::PathBuf;
-use crate::command::{Command, RunResult};
+use crate::command::{Command};
 use crate::command_impl::command_builder::BuiltCommand;
-use crate::command_impl::command_builder::BuiltCommand::BuiltClear;
 use crate::command_impl::file_sys::{CdStruct, LsStruct, PwdStruct};
 use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, UnrecognisedStruct};
-use crate::error::WinuxError;
 use crate::helper::{resolve_args_and_path, resolve_path_or_none};
 
 pub fn command_parser(command:String) -> (String, Vec<String>) {
@@ -39,18 +37,17 @@ pub fn build_command(cmd: Command) -> BuiltCommand {
         Command::Ls {args} => {
             let possible_args: Option<String>= resolve_args_and_path(&args).0;
             let possible_path: Option<String> = resolve_args_and_path(&args).1;
-            let resolved_path: Option<PathBuf>;
-            match possible_path {
-                Some(p) => { resolved_path = resolve_path_or_none(Some(&p)); },
-                None => { resolved_path = None; }
-            }
+            let resolved_path: Option<PathBuf> = match possible_path {
+                Some(p) => { resolve_path_or_none(Some(&p)) },
+                None => { None }
+            };
 
             BuiltCommand::BuiltLs(LsStruct {
                 args: possible_args,
                 path: resolved_path,
             }) },
 
-        Command::Clear => {BuiltClear(ClearStruct {})},
+        Command::Clear => {BuiltCommand::BuiltClear(ClearStruct {})},
 
         Command::Exit => BuiltCommand::BuiltExit(ExitStruct {}),
 

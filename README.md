@@ -26,9 +26,9 @@ Repository of the Winux Shell Initiative.
 ## Near future
 
 - [x] Refactor the system to build an error-friendly framework
-- [x] Divide commands by group and implement them as Structs, where each will have its exact command and args structure as well as handler implementation
-- [ ] Implementation of simple argument parser and matcher
-~~- [ ] Main arguments documentation for currently supported commands, probably in a new `args.rs` file~~ *(Scrapped idea, here as backlog of what once was. See second checklist entry)*
+- [x] Divide commands by group and implement them as Structs, where each will have its exact command and ~~args structure~~ as well as handler implementation
+~~- [x] Implementation of simple argument parser and matcher~~ *(Began implementation, however it was decided arguments will live inside execute logic, with special case for a --help, which will provide native documentation for all builtin commands)*
+~~- [x] Main arguments documentation for currently supported commands, probably in a new `args.rs` file~~ *(Scrapped idea, here as backlog of what once was. See second checklist entry)*
 - [ ] Implementation of filesystem commands such as mkdir, rm, cat, touch, mv, cp
 
 ## Planned, but not an immediate concern
