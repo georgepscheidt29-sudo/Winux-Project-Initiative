@@ -1,9 +1,10 @@
 use std::{env, fs};
+use std::fs::DirEntry;
 use std::path::PathBuf;
 use crate::command::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::filter_hidden_files;
+use crate::helper::{filter_hidden_files, parse_read_dir};
 
 pub(crate) struct PwdStruct {}
 
@@ -58,22 +59,25 @@ impl Executable for LsStruct {
             None => String::from("")
         };
 
-        let mut entries = fs::read_dir(&current_path)
+        let entries = fs::read_dir(&current_path)
             .map_err(|e| WinuxError::SystemError { err: e } )?;
-        
+
+
+        let mut usable_entries: Vec<std::io::Result<DirEntry>> = Vec::new();
         let mut dir_list = Vec::new();
         
         if args.contains("a") {
             dir_list.push(String::from(".."));
             dir_list.push(String::from("."));
+            usable_entries = parse_read_dir(entries);
+
         } else {
-            entries = filter_hidden_files(entries).map_err(|e| WinuxError::SystemError {err: e});
+            usable_entries = filter_hidden_files(entries);
         }
 
-        for entry in entries {
+        for entry in usable_entries {
             let e = entry.map_err(|e| WinuxError::SystemError {err: e})?;
             dir_list.push(e.file_name().to_string_lossy().into_owned());
-
         }
 
         println!("{}", current_path.display());
@@ -82,13 +86,13 @@ impl Executable for LsStruct {
 
         for i in 0..dir_list.len() {
             if i%5 != 0 || i == 0{
-                string_to_print.push_str(&format!("{}\t", dir_list[i]));
+                string_to_print.push_str(&format!("- {}\t", dir_list[i]));
 
             } else if i != 0 {
-                string_to_print.push_str(&format!("{}\n", dir_list[i]));
+                string_to_print.push_str(&format!("- {}\n\n", dir_list[i]));
 
             }
-            
+
         }
 
         println!("{}",string_to_print);

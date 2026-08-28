@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::Duration;
 use std::fs::{DirEntry, ReadDir};
+use crate::error::WinuxError;
 
 pub fn sleep(){
     thread::sleep(Duration::from_millis(500));
@@ -70,8 +71,17 @@ pub fn filter_hidden_files(entries: ReadDir) -> Vec<std::io::Result<DirEntry>> {
         .filter(|entry_result| {
             match entry_result {
                 Ok(entry) => !is_hidden(entry),
-                Err(_) => true, 
+                Err(_) => true,
             }
         })
         .collect()
+}
+
+pub fn parse_read_dir(entries: ReadDir) -> Vec<std::io::Result<DirEntry>> {
+    let mut result: Vec<std::io::Result<DirEntry>> = Vec::new();
+    for x in entries {
+        result.push(x);
+    }
+
+    result
 }
