@@ -1,8 +1,11 @@
-use std::path::{Path, PathBuf};
-use std::thread;
+use std::path::{PathBuf};
+use std::{thread};
 use std::time::Duration;
-use std::fs::{DirEntry, ReadDir};
+use std::fs::{metadata, DirEntry, ReadDir};
+use std::io::Error;
+use chrono::DateTime;
 use crate::error::WinuxError;
+use pad::PadStr;
 
 pub fn sleep(){
     thread::sleep(Duration::from_millis(500));
@@ -84,4 +87,39 @@ pub fn parse_read_dir(entries: ReadDir) -> Vec<std::io::Result<DirEntry>> {
     }
 
     result
+}
+
+pub fn build_metadata(entries: Vec<Result<DirEntry, Error>>) -> Result<String, WinuxError> {
+
+    let mut resulting_string = String::new();
+
+    resulting_string.push_str(&format!("{:<10}", "Size"));
+    resulting_string.push_str(&format!("{:<35}", "File name"));
+    resulting_string.push_str(&format!("{:<15}", "Created at"));
+    resulting_string.push_str(&format!("{}", "Last modified at\n"));
+
+    for entry in entries {
+        let usable_entry = entry.map_err(|e| WinuxError::SystemError {err: e })?;
+        let metadata = metadata(usable_entry.path());
+        let usable_metadata = metadata.map_err(|e| WinuxError::SystemError {err: e})?;
+
+        let file_size = usable_metadata.len();
+        let name = usable_entry.file_name();
+        let created_at = usable_metadata.created().map_err(|e| WinuxError::SystemError {err: e})?;
+        let modified_at = usable_metadata.modified().map_err(|e| WinuxError::SystemError {err: e})?;
+
+        let size_in_kb: f64 = file_size as f64 / 1024.0;
+        let mut readable_size: String = format!("{}", size_in_kb.to_string().with_exact_width(4));
+        readable_size.push_str(" KB");
+        let readable_created = DateTime::<chrono::Local>::from(created_at);
+        let readable_modified = DateTime::<chrono::Local>::from(modified_at);
+
+        resulting_string.push_str(&format!("{}", readable_size.with_exact_width(10)));
+        resulting_string.push_str(&format!("{}", name.to_string_lossy().with_exact_width(35)));
+        resulting_string.push_str(&format!("{}", readable_created.format("%b %d %H:%M").to_string().with_exact_width(15)));
+        resulting_string.push_str(&format!("{}\n", readable_modified.format("%b %d %H:%M").to_string()));
+
+    }
+
+    Ok(resulting_string)
 }

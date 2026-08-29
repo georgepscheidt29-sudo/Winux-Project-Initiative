@@ -1,3 +1,5 @@
+use std::fs;
+use std::path::Path;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
@@ -34,5 +36,14 @@ pub struct UnrecognisedStruct {
 impl Executable for UnrecognisedStruct {
     fn execute(&self) -> Result<RunResult, WinuxError> {
         Err(WinuxError::UnrecognizedCommand {cmd: self.cmd.to_owned()})
+    }
+}
+
+
+pub struct TestStruct {}
+
+impl Executable for TestStruct {
+    fn execute(&self) -> Result<RunResult, WinuxError> {
+        Ok(RunResult::Continue)
     }
 }

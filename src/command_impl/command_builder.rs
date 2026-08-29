@@ -2,7 +2,7 @@ use crate::run_result::{RunResult};
 use crate::command_impl::{general_use, file_sys};
 use crate::error::WinuxError;
 
-pub enum BuiltCommand { //TODO: Make both Command and BuiltCommand into a single enum
+pub enum BuiltCommand {
     Pwd(file_sys::PwdStruct),
     Cd(file_sys::CdStruct),
     Ls(file_sys::LsStruct),
@@ -10,6 +10,7 @@ pub enum BuiltCommand { //TODO: Make both Command and BuiltCommand into a single
     Exit(general_use::ExitStruct),
     Unrecognized(general_use::UnrecognisedStruct),
     Empty(general_use::EmptyStruct),
+    Test(general_use::TestStruct),
 
 }
 
@@ -23,6 +24,7 @@ impl BuiltCommand {
             BuiltCommand::Exit(c) => {c.execute()},
             BuiltCommand::Unrecognized(c) => {c.execute()},
             BuiltCommand::Empty(c) => {c.execute()},
+            BuiltCommand::Test(c) => {c.execute()},
         }
     }
 }

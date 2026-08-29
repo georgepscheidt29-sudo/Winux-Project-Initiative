@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use crate::command_impl::command_builder::BuiltCommand;
 use crate::command_impl::file_sys::{CdStruct, LsStruct, PwdStruct};
-use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, UnrecognisedStruct};
+use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, TestStruct, UnrecognisedStruct};
 use crate::helper::{resolve_args_and_path, resolve_path_or_none};
 
 pub fn command_parser(command:String) -> (String, Vec<String>) {
@@ -39,6 +39,8 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
         "exit" => BuiltCommand::Exit(ExitStruct {}),
 
         "" => BuiltCommand::Empty(EmptyStruct {}),
+
+        "test" => BuiltCommand::Test(TestStruct {}),
 
         _ => BuiltCommand::Unrecognized(UnrecognisedStruct{cmd: cmd.to_string()}),
     }
