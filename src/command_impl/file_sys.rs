@@ -6,6 +6,8 @@ use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
 use crate::helper::{build_metadata, filter_hidden_files, parse_read_dir};
 
+// +===== PWD Implementation =====+
+
 pub(crate) struct PwdStruct {}
 
 impl Executable for PwdStruct {
@@ -18,6 +20,8 @@ impl Executable for PwdStruct {
         Ok(RunResult::Continue)
     }
 }
+
+// +===== CD Implementation =====+
 
 pub(crate) struct CdStruct {
     pub(crate) path: Option<PathBuf>
@@ -63,19 +67,19 @@ impl Executable for LsStruct {
             .map_err(|e| WinuxError::SystemError { err: e } )?;
 
 
-        let usable_entries: Vec<std::io::Result<DirEntry>>;
+        
         let mut dir_list = Vec::new();
 
         let mut string_to_print: String = String::new();
 
-        if args.contains("a") {
+        let usable_entries: Vec<std::io::Result<DirEntry>> = if args.contains("a") {
             dir_list.push(String::from(".."));
             dir_list.push(String::from("."));
-            usable_entries = parse_read_dir(entries);
+            parse_read_dir(entries)
 
         } else {
-            usable_entries = filter_hidden_files(entries);
-        }
+            filter_hidden_files(entries)
+        };
 
         if args.contains("l") {
             string_to_print = build_metadata(usable_entries)?;

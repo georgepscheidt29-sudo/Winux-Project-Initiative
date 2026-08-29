@@ -96,7 +96,7 @@ pub fn build_metadata(entries: Vec<Result<DirEntry, Error>>) -> Result<String, W
     resulting_string.push_str(&format!("{:<10}", "Size"));
     resulting_string.push_str(&format!("{:<35}", "File name"));
     resulting_string.push_str(&format!("{:<15}", "Created at"));
-    resulting_string.push_str(&format!("{}", "Last modified at\n"));
+    resulting_string.push_str("Last modified at\n");
 
     for entry in entries {
         let usable_entry = entry.map_err(|e| WinuxError::SystemError {err: e })?;
@@ -109,15 +109,15 @@ pub fn build_metadata(entries: Vec<Result<DirEntry, Error>>) -> Result<String, W
         let modified_at = usable_metadata.modified().map_err(|e| WinuxError::SystemError {err: e})?;
 
         let size_in_kb: f64 = file_size as f64 / 1024.0;
-        let mut readable_size: String = format!("{}", size_in_kb.to_string().with_exact_width(4));
+        let mut readable_size: String = size_in_kb.to_string().with_exact_width(4).to_string();
         readable_size.push_str(" KB");
         let readable_created = DateTime::<chrono::Local>::from(created_at);
         let readable_modified = DateTime::<chrono::Local>::from(modified_at);
 
-        resulting_string.push_str(&format!("{}", readable_size.with_exact_width(10)));
-        resulting_string.push_str(&format!("{}", name.to_string_lossy().with_exact_width(35)));
-        resulting_string.push_str(&format!("{}", readable_created.format("%b %d %H:%M").to_string().with_exact_width(15)));
-        resulting_string.push_str(&format!("{}\n", readable_modified.format("%b %d %H:%M").to_string()));
+        resulting_string.push_str(&readable_size.with_exact_width(10).to_string());
+        resulting_string.push_str(&name.to_string_lossy().with_exact_width(35).to_string());
+        resulting_string.push_str(&readable_created.format("%b %d %H:%M").to_string().with_exact_width(15).to_string());
+        resulting_string.push_str(&format!("{}\n", readable_modified.format("%b %d %H:%M")));
 
     }
 
