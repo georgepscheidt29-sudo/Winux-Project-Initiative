@@ -3,26 +3,26 @@ use crate::command_impl::{general_use, file_sys};
 use crate::error::WinuxError;
 
 pub enum BuiltCommand { //TODO: Make both Command and BuiltCommand into a single enum
-    BuiltPwd(file_sys::PwdStruct),
-    BuiltCd(file_sys::CdStruct),
-    BuiltLs(file_sys::LsStruct),
-    BuiltClear(general_use::ClearStruct),
-    BuiltExit(general_use::ExitStruct),
-    BuiltUnrecognized(general_use::UnrecognisedStruct),
-    BuiltEmpty(general_use::EmptyStruct),
+    Pwd(file_sys::PwdStruct),
+    Cd(file_sys::CdStruct),
+    Ls(file_sys::LsStruct),
+    Clear(general_use::ClearStruct),
+    Exit(general_use::ExitStruct),
+    Unrecognized(general_use::UnrecognisedStruct),
+    Empty(general_use::EmptyStruct),
 
 }
 
 impl BuiltCommand {
     pub fn execute_struct(&self) -> Result<RunResult, WinuxError> {
         match self {
-            BuiltCommand::BuiltPwd(c) => {c.execute()},
-            BuiltCommand::BuiltCd(c) => {c.execute()},
-            BuiltCommand::BuiltLs(c) => {c.execute()},
-            BuiltCommand::BuiltClear(c) => {c.execute()},
-            BuiltCommand::BuiltExit(c) => {c.execute()},
-            BuiltCommand::BuiltUnrecognized(c) => {c.execute()},
-            BuiltCommand::BuiltEmpty(c) => {c.execute()},
+            BuiltCommand::Pwd(c) => {c.execute()},
+            BuiltCommand::Cd(c) => {c.execute()},
+            BuiltCommand::Ls(c) => {c.execute()},
+            BuiltCommand::Clear(c) => {c.execute()},
+            BuiltCommand::Exit(c) => {c.execute()},
+            BuiltCommand::Unrecognized(c) => {c.execute()},
+            BuiltCommand::Empty(c) => {c.execute()},
         }
     }
 }

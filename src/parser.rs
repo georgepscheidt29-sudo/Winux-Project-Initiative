@@ -16,9 +16,9 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
     let params = raw_cmd.1;
     
     match cmd.as_str() {
-        "pwd" => BuiltCommand::BuiltPwd(PwdStruct {}),
+        "pwd" => BuiltCommand::Pwd(PwdStruct {}),
 
-        "cd" => BuiltCommand::BuiltCd(CdStruct {
+        "cd" => BuiltCommand::Cd(CdStruct {
             path: resolve_path_or_none(params.first() )}),
 
         "ls" => {
@@ -29,17 +29,17 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
                 None => { None }
             };
 
-            BuiltCommand::BuiltLs(LsStruct {
+            BuiltCommand::Ls(LsStruct {
                 args: possible_args,
                 path: resolved_path,
             }) },
 
-        "clear" => {BuiltCommand::BuiltClear(ClearStruct {})},
+        "clear" => {BuiltCommand::Clear(ClearStruct {})},
 
-        "exit" => BuiltCommand::BuiltExit(ExitStruct {}),
+        "exit" => BuiltCommand::Exit(ExitStruct {}),
 
-        "" => BuiltCommand::BuiltEmpty(EmptyStruct {}),
+        "" => BuiltCommand::Empty(EmptyStruct {}),
 
-        _ => BuiltCommand::BuiltUnrecognized(UnrecognisedStruct{cmd: cmd.to_string()}),
+        _ => BuiltCommand::Unrecognized(UnrecognisedStruct{cmd: cmd.to_string()}),
     }
 }
