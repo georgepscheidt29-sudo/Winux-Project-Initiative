@@ -1,6 +1,7 @@
 use std::{env, fs};
-use std::fs::DirEntry;
+use std::fs::{DirEntry, File, FileTimes};
 use std::path::PathBuf;
+use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
@@ -110,6 +111,8 @@ impl Executable for LsStruct {
     }
 }
 
+// +===== MKDIR Implementation =====+
+
 pub struct MkDirStruct {
     pub(crate) args: Option<String>,
     pub(crate) path: Option<PathBuf>,
@@ -139,3 +142,34 @@ impl Executable for MkDirStruct {
 
     }
 }
+
+// +===== TOUCH Implementation =====+
+
+pub struct TouchStruct {
+    pub(crate) path: Option<PathBuf>,
+
+}
+
+impl Executable for TouchStruct {
+    fn execute(&self) -> Result<RunResult,WinuxError> {
+        let path = match &self.path {
+            Some(p) => p.to_owned(),
+            None => return Err(WinuxError::DefaultError {msg: "Command Touch expects a file name/path, none specified".to_string()}),
+        };
+
+        if path.exists() {
+            let current_time = FileTimes::new()
+                .set_modified(SystemTime::now())
+                .set_accessed(SystemTime::now());
+
+            let file = File::open(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+            file.set_times(current_time).map_err(|e| WinuxError::SystemError { err: e })?;
+
+        } else {
+            File::create(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+        }
+
+        Ok(RunResult::Continue)
+    }
+}
+
