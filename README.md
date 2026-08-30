@@ -10,13 +10,15 @@ Repository of the Winux Shell Initiative.
 ### Currently implemented commands:
 
 
-| Command | Implementation                                                                                                                                              |
-| :--- |:------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pwd` | Implemented via calling `current_dir()`                                                                                                                     |
-| `cd` | Implemented via calling `set_current_dir()` *(Fixed typo)*                                                                                                  |
-| `ls` | Implemented using `read_dir()` with iterator to format the list, currently supports -a and -l arguments                                                     |
-| `clear` | Implemented via the standard `print!("\x1B[2J\x1B[1;1H")` method                                                                                            |
-| `exit` | Currently sends a status 1 to the main loop, signaling it to break, will possibly change in the future when status comes to mean more to the overall system |
+| Command | Implementation                                                                                                                                                                   |
+|:--------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pwd`   | Implemented via calling `current_dir()`                                                                                                                                          |
+| `cd`    | Implemented via calling `set_current_dir()` *(Fixed typo)*                                                                                                                       |
+| `ls`    | Implemented using `read_dir()` with iterator to format the list, currently supports -a and -l arguments                                                                          |
+| `clear` | Implemented via the standard `print!("\x1B[2J\x1B[1;1H")` method                                                                                                                 |
+| `exit`  | Utilizes the RunResult enum, which is currently the backbone of the REPL system, any command other then exit sends a Continue, and the REPL waits for a RunResult::Exit to break |
+| `mkdir` | Implemented via create_dir() fs method, with -p implemented via create_dir_all()                                                                                                 |
+
 
 
 
