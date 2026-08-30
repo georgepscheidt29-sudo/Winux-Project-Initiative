@@ -109,3 +109,33 @@ impl Executable for LsStruct {
         Ok(RunResult::Continue)
     }
 }
+
+pub struct MkDirStruct {
+    pub(crate) args: Option<String>,
+    pub(crate) path: Option<PathBuf>,
+
+}
+
+impl Executable for MkDirStruct {
+    fn execute(&self) -> Result<RunResult,WinuxError> {
+        let args = match &self.args {
+            Some(a) => a.to_owned(),
+            None => String::from("")
+        };
+
+        let path = match &self.path {
+            Some(p) => p.to_owned(),
+            None => return Err(WinuxError::DefaultError {msg: "Command MkDir expects a directory name/path, none specified".to_string()}),
+        };
+
+        if args.contains("p") {
+            fs::create_dir_all(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+            Ok(RunResult::Continue)
+
+        } else {
+            fs::create_dir(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+            Ok(RunResult::Continue)
+        }
+
+    }
+}

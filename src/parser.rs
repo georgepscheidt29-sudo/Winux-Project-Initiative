@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use crate::command_impl::command_builder::BuiltCommand;
-use crate::command_impl::file_sys::{CdStruct, LsStruct, PwdStruct};
+use crate::command_impl::file_sys::{CdStruct, LsStruct, MkDirStruct, PwdStruct};
 use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, TestStruct, UnrecognisedStruct};
 use crate::helper::{resolve_args_and_path, resolve_path_or_none};
 
@@ -22,8 +22,10 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
             path: resolve_path_or_none(params.first() )}),
 
         "ls" => {
-            let possible_args: Option<String>= resolve_args_and_path(&params).0;
-            let possible_path: Option<String> = resolve_args_and_path(&params).1;
+            let resolved_args = resolve_args_and_path(&params);
+            let possible_args: Option<String>= resolved_args.0;
+            let possible_path: Option<String> = resolved_args.1;
+
             let resolved_path: Option<PathBuf> = match possible_path {
                 Some(p) => { resolve_path_or_none(Some(&p)) },
                 None => { None }
@@ -37,6 +39,22 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
         "clear" => {BuiltCommand::Clear(ClearStruct {})},
 
         "exit" => BuiltCommand::Exit(ExitStruct {}),
+
+        "mkdir" => {
+            let resolved_args = resolve_args_and_path(&params);
+            let possible_args: Option<String>= resolved_args.0;
+            let possible_path: Option<String> = resolved_args.1;
+
+            let resolved_path: Option<PathBuf> = match possible_path {
+                Some(p) => { resolve_path_or_none(Some(&p)) },
+                None => { None }
+            };
+
+            BuiltCommand::MkDir(MkDirStruct {
+                args: possible_args,
+                path: resolved_path
+            })
+        },
 
         "" => BuiltCommand::Empty(EmptyStruct {}),
 

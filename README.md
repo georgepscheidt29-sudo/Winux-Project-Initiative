@@ -10,12 +10,12 @@ Repository of the Winux Shell Initiative.
 ### Currently implemented commands:
 
 
-| Command | Implementation |
-| :--- | :--- |
-| `pwd` | Implemented via calling `current_dir()` |
-| `cd` | Implemented via calling `set_current_dir()` *(Fixed typo)* |
-| `ls` | Implemented using `read_dir()` with iterator to format the list, does not currently support arguments other than path (WIP) |
-| `clear` | Implemented via the standard `print!("\x1B[2J\x1B[1;1H")` method |
+| Command | Implementation                                                                                                                                              |
+| :--- |:------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pwd` | Implemented via calling `current_dir()`                                                                                                                     |
+| `cd` | Implemented via calling `set_current_dir()` *(Fixed typo)*                                                                                                  |
+| `ls` | Implemented using `read_dir()` with iterator to format the list, currently supports -a and -l arguments                                                     |
+| `clear` | Implemented via the standard `print!("\x1B[2J\x1B[1;1H")` method                                                                                            |
 | `exit` | Currently sends a status 1 to the main loop, signaling it to break, will possibly change in the future when status comes to mean more to the overall system |
 
 

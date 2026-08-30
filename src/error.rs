@@ -8,7 +8,7 @@ pub enum WinuxError {
     ArgumentExpected {cmd: String},
     UnrecognizedParameter {param: String, cmd: String},
     SystemError {err: io::Error},
-    DefaultError,
+    DefaultError {msg: String},
     UnrecognizedCommand {cmd: String}
 }
 
@@ -20,7 +20,7 @@ impl WinuxError {
             WinuxError::ArgumentNotExpected {cmd} => eprintln!("An argument was found where none was expected for command: {}", cmd),
             WinuxError::ArgumentExpected {cmd} => eprintln!("An argument was expected where none was found for command: {}", cmd),
             WinuxError::UnrecognizedParameter {param, cmd} => eprintln!("Unrecognized parameter: {} for command: {}", param, cmd),
-            WinuxError::DefaultError => eprintln!("Process Failed, try again in a moment"),
+            WinuxError::DefaultError {msg} => eprintln!("{msg}"),
             WinuxError::UnrecognizedCommand {cmd} => eprintln!("Unable to recognize command: {}", cmd)
         }
     }
