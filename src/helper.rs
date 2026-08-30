@@ -6,6 +6,7 @@ use std::io::Error;
 use chrono::DateTime;
 use crate::error::WinuxError;
 use pad::PadStr;
+use crate::command_impl::file_type::match_file_type;
 
 pub fn sleep(){
     thread::sleep(Duration::from_millis(500));
@@ -94,6 +95,7 @@ pub fn build_metadata(entries: Vec<Result<DirEntry, Error>>) -> Result<String, W
     let mut resulting_string = String::new();
 
     resulting_string.push_str(&format!("{:<10}", "Size"));
+    resulting_string.push_str(&format!("{:<8}", "Type"));
     resulting_string.push_str(&format!("{:<35}", "File name"));
     resulting_string.push_str(&format!("{:<15}", "Created at"));
     resulting_string.push_str("Last modified at\n");
@@ -104,6 +106,7 @@ pub fn build_metadata(entries: Vec<Result<DirEntry, Error>>) -> Result<String, W
         let usable_metadata = metadata.map_err(|e| WinuxError::SystemError {err: e})?;
 
         let file_size = usable_metadata.len();
+        let file_type = match_file_type(&usable_metadata).to_string();
         let name = usable_entry.file_name();
         let created_at = usable_metadata.created().map_err(|e| WinuxError::SystemError {err: e})?;
         let modified_at = usable_metadata.modified().map_err(|e| WinuxError::SystemError {err: e})?;
@@ -115,6 +118,7 @@ pub fn build_metadata(entries: Vec<Result<DirEntry, Error>>) -> Result<String, W
         let readable_modified = DateTime::<chrono::Local>::from(modified_at);
 
         resulting_string.push_str(&readable_size.with_exact_width(10).to_string());
+        resulting_string.push_str(&file_type.with_exact_width(8).to_string());
         resulting_string.push_str(&name.to_string_lossy().with_exact_width(35).to_string());
         resulting_string.push_str(&readable_created.format("%b %d %H:%M").to_string().with_exact_width(15).to_string());
         resulting_string.push_str(&format!("{}\n", readable_modified.format("%b %d %H:%M")));
