@@ -18,6 +18,7 @@ Repository of the Winux Shell Initiative.
 | `clear` | Implemented via the standard `print!("\x1B[2J\x1B[1;1H")` method                                                                                                                 |
 | `exit`  | Utilizes the RunResult enum, which is currently the backbone of the REPL system, any command other then exit sends a Continue, and the REPL waits for a RunResult::Exit to break |
 | `mkdir` | Implemented via create_dir() fs method, with -p implemented via create_dir_all()                                                                                                 |
+| `touch` | Implemented via File::create method for non-existent file names, and FileTimes to update timestamps on already existent files                                                    |
 
 
 
