@@ -176,6 +176,14 @@ pub struct RmStruct {
     pub(crate) path: Option<Vec<PathBuf>>,
 }
 
+/*
+TODO: Implement -r arg for RM by:
+    1. Checking if PathBuf is a directory
+    1. Using parse_read_dir to get a Vec<Result<DirEntry>> out of the directory
+    3. Repeat step 1 and 2 until no directory is found, then:
+    4. Loop through all files to remove them, move back a directory, go back to step 1. This process only stops when the path inserted by the user is empty, and right after the loop closes, that directory will be removed.
+*/
+
 impl Executable for RmStruct {
     fn execute(&self) -> Result<RunResult,WinuxError> {
         let args = match &self.args {
