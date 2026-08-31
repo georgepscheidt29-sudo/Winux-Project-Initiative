@@ -1,6 +1,6 @@
 use std::{env, fs};
 use std::fs::{DirEntry, File, FileTimes};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
@@ -102,8 +102,6 @@ impl Executable for LsStruct {
             }
         }
 
-
-
         println!("{}", current_path.display());
         println!("\n{}",string_to_print);
 
@@ -190,23 +188,30 @@ impl Executable for RmStruct {
             None => return Err(WinuxError::DefaultError {msg: "Command Rm expects a file name/path, none specified".to_string()}),
         };
 
+        let mut removed_files: Vec<String> = Vec::new();
+
         for path in path_list {
             if args.contains("f") {
                 match fs::remove_file(&path) {
                     Ok(_) => (),
                     Err(e) if e.kind() == std::io::ErrorKind::NotFound => {},
-                    Err(e) => return Err(WinuxError::SystemError { err: e })?
+                    Err(e) => return Err(WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: removed_files.clone(), err: e })?
                 }
+
             } else {
                 if args.contains("i") {
                     let msg = format!("Remove {}?", path.display());
+
                    if await_user_approval_y_or_n(msg)? {
-                       fs::remove_file(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+                       fs::remove_file(&path).map_err(|e| WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: removed_files.clone(), err: e })?;
+
                    }
                 } else {
-                    fs::remove_file(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+                    fs::remove_file(&path).map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: removed_files.clone(), err: e })?;
+
                 }
             }
+            removed_files.push(path.to_string_lossy().to_string());
         }
 
         Ok(RunResult::Continue)

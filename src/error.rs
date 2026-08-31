@@ -1,14 +1,13 @@
 use std::path::PathBuf;
 use std::{io, path};
+use crate::helper::print_vec_of_string;
 
 #[allow(dead_code)]
 pub enum WinuxError { //TODO: Make new error for rm with message "Unable to remove file {file}, files deleted: {files vec}, see cause below:\n {Error}"
     PathNotFound {path: PathBuf},
-    ArgumentNotExpected {cmd: String},
-    ArgumentExpected {cmd: String},
-    UnrecognizedParameter {param: String, cmd: String},
     SystemError {err: io::Error},
     DefaultError {msg: String},
+    RmError {file: String, rm_files: Vec<String>, err: io::Error},
     UnrecognizedCommand {cmd: String}
 }
 
@@ -17,10 +16,17 @@ impl WinuxError {
         match self {
             WinuxError::PathNotFound {path} => eprintln!("Could not find path {}", path::absolute(path).unwrap_or_else(|_| {path.to_path_buf()}).display()),
             WinuxError::SystemError {err} => eprintln!("{}", err),
-            WinuxError::ArgumentNotExpected {cmd} => eprintln!("An argument was found where none was expected for command: {}", cmd),
-            WinuxError::ArgumentExpected {cmd} => eprintln!("An argument was expected where none was found for command: {}", cmd),
-            WinuxError::UnrecognizedParameter {param, cmd} => eprintln!("Unrecognized parameter: {} for command: {}", param, cmd),
             WinuxError::DefaultError {msg} => eprintln!("{msg}"),
+            WinuxError::RmError {file, rm_files, err} => {
+                eprintln!("Unable to remove file {}\n", file);
+                if rm_files.is_empty() {
+                    eprintln!();
+                } else {
+                    eprintln!("Successfully removed:");
+                    print_vec_of_string(rm_files);
+                }
+                eprintln!("With root cause: {}", err)
+            },
             WinuxError::UnrecognizedCommand {cmd} => eprintln!("Unable to recognize command: {}", cmd)
         }
     }

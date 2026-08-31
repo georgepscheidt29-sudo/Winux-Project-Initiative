@@ -160,3 +160,9 @@ pub fn await_user_approval_y_or_n(prompt: String) -> Result<bool, WinuxError> {
         _ => Ok(false),
     }
 }
+
+pub fn print_vec_of_string(vec_to_print: &Vec<String>) {
+    for s in vec_to_print {
+        eprintln!("{}\n", s);
+    }
+}
