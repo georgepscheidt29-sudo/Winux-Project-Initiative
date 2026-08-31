@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::{io, path};
 
 #[allow(dead_code)]
-pub enum WinuxError {
+pub enum WinuxError { //TODO: Make new error for rm with message "Unable to remove file {file}, files deleted: {files vec}, see cause below:\n {Error}"
     PathNotFound {path: PathBuf},
     ArgumentNotExpected {cmd: String},
     ArgumentExpected {cmd: String},

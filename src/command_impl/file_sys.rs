@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::{build_metadata, filter_hidden_files, parse_read_dir};
+use crate::helper::{await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir};
 
 // +===== PWD Implementation =====+
 
@@ -167,6 +167,46 @@ impl Executable for TouchStruct {
 
         } else {
             File::create(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+        }
+
+        Ok(RunResult::Continue)
+    }
+}
+
+pub struct RmStruct {
+    pub(crate) args: Option<String>,
+    pub(crate) path: Option<Vec<PathBuf>>,
+}
+
+impl Executable for RmStruct {
+    fn execute(&self) -> Result<RunResult,WinuxError> {
+        let args = match &self.args {
+            Some(a) => a.to_owned(),
+            None => String::from("")
+        };
+
+        let path_list = match &self.path {
+            Some(p) => p.to_owned(),
+            None => return Err(WinuxError::DefaultError {msg: "Command Rm expects a file name/path, none specified".to_string()}),
+        };
+
+        for path in path_list {
+            if args.contains("f") {
+                match fs::remove_file(&path) {
+                    Ok(_) => (),
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {},
+                    Err(e) => return Err(WinuxError::SystemError { err: e })?
+                }
+            } else {
+                if args.contains("i") {
+                    let msg = format!("Remove {}?", path.display());
+                   if await_user_approval_y_or_n(msg)? {
+                       fs::remove_file(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+                   }
+                } else {
+                    fs::remove_file(&path).map_err(|e| WinuxError::SystemError { err: e })?;
+                }
+            }
         }
 
         Ok(RunResult::Continue)

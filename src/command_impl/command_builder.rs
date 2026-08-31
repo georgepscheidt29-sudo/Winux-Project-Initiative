@@ -10,6 +10,7 @@ pub enum BuiltCommand {
     Exit(general_use::ExitStruct),
     MkDir(file_sys::MkDirStruct),
     Touch(file_sys::TouchStruct),
+    Rm(file_sys::RmStruct),
     Unrecognized(general_use::UnrecognisedStruct),
     Empty(general_use::EmptyStruct),
     Test(general_use::TestStruct),
@@ -26,6 +27,7 @@ impl BuiltCommand {
             BuiltCommand::Exit(c) => {c.execute()},
             BuiltCommand::MkDir(c) => {c.execute()},
             BuiltCommand::Touch(c) => {c.execute()},
+            BuiltCommand::Rm(c) => {c.execute()},
             BuiltCommand::Unrecognized(c) => {c.execute()},
             BuiltCommand::Empty(c) => {c.execute()},
             BuiltCommand::Test(c) => {c.execute()}, // Here only to test behaviors during development, the struct and .execute will more often then not be empty when pushed to github

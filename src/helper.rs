@@ -2,7 +2,7 @@ use std::path::{PathBuf};
 use std::{thread};
 use std::time::Duration;
 use std::fs::{metadata, DirEntry, ReadDir};
-use std::io::Error;
+use std::io::{stdin, Error};
 use chrono::DateTime;
 use crate::error::WinuxError;
 use pad::PadStr;
@@ -126,4 +126,17 @@ pub fn build_metadata(entries: Vec<Result<DirEntry, Error>>) -> Result<String, W
     }
 
     Ok(resulting_string)
+}
+
+pub fn await_user_approval_y_or_n(prompt: String) -> Result<bool, WinuxError> {
+    let mut answer: String = String::new();
+
+    println!("{}, (y/n)", prompt);
+    stdin().read_line(&mut answer).map_err(|e| WinuxError::SystemError {err: e })?;
+
+    match answer.trim() {
+        "y" => Ok(true),
+        "yes" => Ok(true),
+        _ => Ok(false),
+    }
 }

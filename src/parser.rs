@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use crate::command_impl::command_builder::BuiltCommand;
-use crate::command_impl::file_sys::{CdStruct, LsStruct, MkDirStruct, PwdStruct, TouchStruct};
+use crate::command_impl::file_sys::{CdStruct, LsStruct, MkDirStruct, PwdStruct, RmStruct, TouchStruct};
 use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, TestStruct, UnrecognisedStruct};
 use crate::helper::{resolve_args_and_path, resolve_path_or_none};
 
@@ -61,6 +61,17 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
             path: resolve_path_or_none( params.first() )
         })
         },
+
+        "rm" => { //TODO: Add capability to return a multitude of Paths, Opt1: Make current helper return a list and use first for commands that take only 1 path, Opt 2 Make secondary helper for functions that take multiple paths along with args
+            let resolved_args = resolve_args_and_path(&params);
+            let possible_args: Option<String>= resolved_args.0;
+            let possible_path: Option<String> = resolved_args.1;
+
+           BuiltCommand::Rm(RmStruct{
+               args: possible_args,
+               path: possible_path
+           })
+        }
 
         "" => BuiltCommand::Empty(EmptyStruct {}),
 
