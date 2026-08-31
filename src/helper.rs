@@ -41,6 +41,26 @@ pub fn resolve_args_and_path(args: &[String]) -> (Option<String>, Option<String>
     }
 }
 
+// Essentially equal to function above, but specifically built for commands that take args and possibly more than one path
+pub fn resolve_args_and_path_list(args: &[String]) -> (Option<String>, Option<Vec<String>>) {
+    let mut param: Option<String> = None;
+    let mut path_list: Option<Vec<String>> = Some(Vec::new());
+
+    if args.is_empty() {
+        return (None, None);
+    } else {
+        for arg in args {
+            if path_or_args(&arg) {
+                param = Some(arg.clone());
+            } else {
+                path_list.as_mut().unwrap().push(arg.clone());
+            }
+        }
+    }
+
+    (param, path_list)
+}
+
 // Returns true if it is an argmument starting with -, else returns false, considering it as path or file name
 fn path_or_args(param: &str) -> bool {
     param.trim().starts_with("-")

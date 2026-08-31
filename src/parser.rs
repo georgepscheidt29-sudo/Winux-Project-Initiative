@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use crate::command_impl::command_builder::BuiltCommand;
 use crate::command_impl::file_sys::{CdStruct, LsStruct, MkDirStruct, PwdStruct, RmStruct, TouchStruct};
 use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, TestStruct, UnrecognisedStruct};
-use crate::helper::{resolve_args_and_path, resolve_path_or_none};
+use crate::helper::{resolve_args_and_path, resolve_args_and_path_list, resolve_path_or_none};
 
 pub fn command_parser(command:String) -> (String, Vec<String>) {
     let parsed_command_raw: Vec<&str> = command.split(" ").collect();
@@ -62,14 +62,32 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
         })
         },
 
-        "rm" => { //TODO: Add capability to return a multitude of Paths, Opt1: Make current helper return a list and use first for commands that take only 1 path, Opt 2 Make secondary helper for functions that take multiple paths along with args
-            let resolved_args = resolve_args_and_path(&params);
+        "rm" => {
+            let resolved_args = resolve_args_and_path_list(&params);
             let possible_args: Option<String>= resolved_args.0;
-            let possible_path: Option<String> = resolved_args.1;
+            let possible_path: Option<Vec<String>> = resolved_args.1;
+
+            let mut temp_path_list: Vec<Option<PathBuf>> = Vec::new();
+            let mut resolved_path_vec: Option<Vec<PathBuf>> = Some(Vec::new());
+
+            match possible_path {
+                Some(p) => {
+                    for path in p {
+                        temp_path_list.push(resolve_path_or_none( Some(&path)))
+                    }
+                },
+                None => {resolved_path_vec = None}
+            }
+
+            for path in temp_path_list {
+                if let Some(p) = path {
+                    resolved_path_vec.as_mut().unwrap().push(p)
+                }
+            }
 
            BuiltCommand::Rm(RmStruct{
                args: possible_args,
-               path: possible_path
+               path: resolved_path_vec
            })
         }
 
