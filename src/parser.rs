@@ -79,10 +79,8 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
                 None => {resolved_path_vec = None}
             }
 
-            for path in temp_path_list {
-                if let Some(p) = path {
-                    resolved_path_vec.as_mut().unwrap().push(p)
-                }
+            for p in temp_path_list.into_iter().flatten() {
+                resolved_path_vec.as_mut().unwrap().push(p)
             }
 
            BuiltCommand::Rm(RmStruct{

@@ -50,7 +50,7 @@ pub fn resolve_args_and_path_list(args: &[String]) -> (Option<String>, Option<Ve
         return (None, None);
     } else {
         for arg in args {
-            if path_or_args(&arg) {
+            if path_or_args(arg) {
                 param = Some(arg.clone());
             } else {
                 path_list.as_mut().unwrap().push(arg.clone());
