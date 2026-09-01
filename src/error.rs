@@ -7,6 +7,7 @@ pub enum WinuxError { //TODO: Make new error for rm with message "Unable to remo
     PathNotFound {path: PathBuf},
     SystemError {err: io::Error},
     DefaultError {msg: String},
+    ExpectedDir,
     RmError {file: String, rm_files: Vec<String>, err: io::Error},
     UnrecognizedCommand {cmd: String}
 }
@@ -17,6 +18,7 @@ impl WinuxError {
             WinuxError::PathNotFound {path} => eprintln!("Could not find path {}", path::absolute(path).unwrap_or_else(|_| {path.to_path_buf()}).display()),
             WinuxError::SystemError {err} => eprintln!("{}", err),
             WinuxError::DefaultError {msg} => eprintln!("{msg}"),
+            WinuxError::ExpectedDir => eprintln!("Expected Directory, found other file type"),
             WinuxError::RmError {file, rm_files, err} => {
                 eprintln!("Unable to remove file {}\n", file);
                 if rm_files.is_empty() {

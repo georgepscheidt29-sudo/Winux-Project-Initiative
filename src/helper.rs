@@ -1,6 +1,7 @@
 use std::path::{PathBuf};
 use std::{thread};
 use std::time::Duration;
+use std::fs;
 use std::fs::{metadata, DirEntry, ReadDir};
 use std::io::{stdin, Error};
 use chrono::DateTime;
@@ -165,4 +166,40 @@ pub fn print_vec_of_string(vec_to_print: &Vec<String>) {
     for s in vec_to_print {
         eprintln!("{}\n", s);
     }
+}
+
+pub fn expect_dir_or_error(path: &PathBuf) -> Result<bool, WinuxError> {
+    fs::symlink_metadata(path)
+        .map_err(|e| WinuxError::SystemError{err: e})
+        .and_then(|meta| {
+            if meta.is_dir() {
+                Ok(true)
+
+            } else {
+                Err(WinuxError::ExpectedDir)
+
+            }
+        })
+}
+
+pub fn find_deepest_dir(starting_path: &PathBuf) -> Result<PathBuf, WinuxError> {
+    let mut dir_entries = parse_read_dir(fs::read_dir(starting_path)
+        .map_err(|e| WinuxError::SystemError {err: e})?);
+    let mut deepest_dir: PathBuf = starting_path.to_owned(); 
+
+    for entry in dir_entries {
+        match entry {
+            Ok(file) => {
+                if file.path().is_dir() {
+                    dir_entries = parse_read_dir(fs::read_dir(file.path())
+                        .map_err(|e| WinuxError::SystemError {err: e})?);
+                    deepest_dir = file.path();
+                }
+            },
+            Err(e) => Err(WinuxError::SystemError {err: e})?
+        }
+    }
+
+    Ok(deepest_dir)
+
 }

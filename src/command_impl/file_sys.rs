@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::{await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir};
+use crate::helper::{expect_dir_or_error, await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir};
 
 // +===== PWD Implementation =====+
 
@@ -196,33 +196,55 @@ impl Executable for RmStruct {
             None => return Err(WinuxError::DefaultError {msg: "Command Rm expects a file name/path, none specified".to_string()}),
         };
 
+        let force = args.contains("f");
+        let confirm = args.contains("i");
+        let recursive = args.contains("r");
+
         let mut removed_files: Vec<String> = Vec::new();
 
         for path in path_list {
-            if args.contains("f") {
-                match fs::remove_file(&path) {
-                    Ok(_) => (),
-                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {},
-                    Err(e) => return Err(WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: removed_files.clone(), err: e })?
+            if !recursive {
+                if handle_removal(confirm, force, &path, &removed_files)? {
+                    removed_files.push(path.to_string_lossy().to_string());
                 }
 
             } else {
-                if args.contains("i") {
-                    let msg = format!("Remove {}?", path.display());
+                if !path.is_dir() {
+                    if handle_removal(confirm, force, &path, &removed_files)? {
+                        removed_files.push(path.to_string_lossy().to_string());
 
-                   if await_user_approval_y_or_n(msg)? {
-                       fs::remove_file(&path).map_err(|e| WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: removed_files.clone(), err: e })?;
+                    }
 
-                   }
                 } else {
-                    fs::remove_file(&path).map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: removed_files.clone(), err: e })?;
-
+                    
                 }
             }
-            removed_files.push(path.to_string_lossy().to_string());
         }
 
         Ok(RunResult::Continue)
     }
 }
 
+fn handle_removal(confirm: bool, force: bool, path: &PathBuf, rm_files: &Vec<String>) -> Result <bool, WinuxError> {
+    if force {
+        match fs::remove_file(path) {
+                    Ok(_) => Ok(true),
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+                    Err(e) => Err(WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: rm_files.clone(), err: e })?
+                }
+    } else if confirm {
+        let msg = format!("Remove {}?", path.display());
+
+        if await_user_approval_y_or_n(msg)? {
+            fs::remove_file(path)
+                .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.clone(), err: e })?;
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    } else {
+        fs::remove_file(path)
+            .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.clone(), err: e })?;
+        Ok(true)
+    }
+}
