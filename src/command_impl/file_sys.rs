@@ -1,11 +1,11 @@
 use std::{env, fs, path};
-use std::fs::{remove_file, DirEntry, File, FileTimes, symlink_metadata};
-use std::path::{Path, PathBuf};
+use std::fs::{DirEntry, File, FileTimes, symlink_metadata};
+use std::path::PathBuf;
 use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::{await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir, rm_file};
+use crate::helper::{build_metadata, filter_hidden_files, parse_read_dir, rm_file};
 
 // +===== PWD Implementation =====+
 
@@ -175,14 +175,6 @@ pub struct RmStruct {
     pub(crate) args: Option<String>,
     pub(crate) path: Option<Vec<PathBuf>>,
 }
-
-/*
-TODO: Implement -r arg for RM by:
-    1. Checking if PathBuf is a directory
-    1. Using parse_read_dir to get a Vec<Result<DirEntry>> out of the directory
-    3. Repeat step 1 and 2 until no directory is found, then:
-    4. Loop through all files to remove them, move back a directory, go back to step 1. This process only stops when the path inserted by the user is empty, and right after the loop closes, that directory will be removed.
-*/
 
 impl Executable for RmStruct {
     fn execute(&self) -> Result<RunResult,WinuxError> {

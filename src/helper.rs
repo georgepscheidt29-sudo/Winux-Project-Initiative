@@ -169,20 +169,6 @@ pub fn print_vec_of_string(vec_to_print: &Vec<String>) {
     }
 }
 
-pub fn expect_dir_or_error(path: &PathBuf) -> Result<bool, WinuxError> {
-    fs::symlink_metadata(path)
-        .map_err(|e| WinuxError::SystemError{err: e})
-        .and_then(|meta| {
-            if meta.is_dir() {
-                Ok(true)
-
-            } else {
-                Err(WinuxError::ExpectedDir)
-
-            }
-        })
-}
-
 pub fn rm_file(
     confirm: bool,
     force: bool,
