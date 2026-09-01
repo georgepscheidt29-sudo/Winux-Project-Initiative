@@ -37,8 +37,6 @@ impl Executable for UnrecognisedStruct {
     }
 }
 
-use crate::helper::find_deepest_dir;
-use std::path::PathBuf;
 pub struct TestStruct {}
 
 impl Executable for TestStruct {

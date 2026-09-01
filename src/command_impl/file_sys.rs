@@ -1,11 +1,11 @@
-use std::{env, fs};
-use std::fs::{DirEntry, File, FileTimes};
-use std::path::PathBuf;
+use std::{env, fs, path};
+use std::fs::{remove_file, DirEntry, File, FileTimes, symlink_metadata};
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::{await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir};
+use crate::helper::{await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir, rm_file};
 
 // +===== PWD Implementation =====+
 
@@ -204,20 +204,23 @@ impl Executable for RmStruct {
 
         for path in path_list {
             if !recursive {
-                if handle_removal(confirm, force, &path, &removed_files)? {
-                    removed_files.push(path.to_string_lossy().to_string());
+                if rm_file(confirm, force, &path, &removed_files)? {
+                    removed_files.push(
+                        path::absolute(path)
+                            .map_err(|e| WinuxError::SystemError { err: e })?
+                            .to_string_lossy()
+                            .into_owned()
+                    );
                 }
-
             } else {
-                if !path.is_dir() {
-                    if handle_removal(confirm, force, &path, &removed_files)? {
-                        removed_files.push(path.to_string_lossy().to_string());
+                handle_removal_recursive(confirm, force, &path, &removed_files)?;
 
-                    }
-
-                } else {
-                    
-                }
+                removed_files.push(
+                    path::absolute(path)
+                        .map_err(|e| WinuxError::SystemError { err: e })?
+                        .to_string_lossy()
+                        .into_owned()
+                );
             }
         }
 
@@ -225,30 +228,35 @@ impl Executable for RmStruct {
     }
 }
 
-fn handle_removal(confirm: bool, force: bool, path: &PathBuf, rm_files: &[String]) -> Result <bool, WinuxError> {
-    if force {
-        match fs::remove_file(path) {
-                    Ok(_) => Ok(true),
-                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
-                    Err(e) => Err(WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: rm_files.to_owned(), err: e })?
-                    
-                }
-    } else if confirm {
-        let msg = format!("Remove {}?", path.display());
+fn handle_removal_recursive(
+    confirm: bool,
+    force: bool,
+    path: &PathBuf,
+    rm_files: &[String],
+) -> Result<bool, WinuxError> {
 
-        if await_user_approval_y_or_n(msg)? {
-            fs::remove_file(path)
-                .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.to_owned(), err: e })?;
-            Ok(true)
+    let dir_entries = parse_read_dir(
+        fs::read_dir(path)
+            .map_err(|e| WinuxError::SystemError { err: e })?
+    );
 
+    for entry in dir_entries {
+        let e = entry
+            .map_err(|e| WinuxError::SystemError { err: e })?
+            .path();
+
+        let metadata = symlink_metadata(&e)
+            .map_err(|e| WinuxError::SystemError { err: e })?;
+
+        if metadata.is_dir() {
+            handle_removal_recursive(confirm, force, &e, rm_files)?;
         } else {
-            Ok(false)
-
+            rm_file(confirm, force, &e, rm_files)?;
         }
-    } else {
-        fs::remove_file(path)
-            .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.to_owned(), err: e })?;
-        Ok(true)
-
     }
+
+    fs::remove_dir(path)
+        .map_err(|e| WinuxError::SystemError { err: e })?;
+
+    Ok(true)
 }

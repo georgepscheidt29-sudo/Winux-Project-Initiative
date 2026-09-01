@@ -158,6 +158,7 @@ pub fn await_user_approval_y_or_n(prompt: String) -> Result<bool, WinuxError> {
     match answer.trim() {
         "y" => Ok(true),
         "yes" => Ok(true),
+        "" => Ok(true),
         _ => Ok(false),
     }
 }
@@ -182,21 +183,41 @@ pub fn expect_dir_or_error(path: &PathBuf) -> Result<bool, WinuxError> {
         })
 }
 
-pub fn find_deepest_dir(starting_path: &PathBuf) -> Result<PathBuf, WinuxError> {
-    let dir_entries = parse_read_dir(fs::read_dir(starting_path)
-        .map_err(|e| WinuxError::SystemError {err: e})?);
-    let mut deepest_dir: PathBuf = starting_path.to_owned(); 
+pub fn rm_file(
+    confirm: bool,
+    force: bool,
+    path: &PathBuf,
+    rm_files: &[String],
+) -> Result<bool, WinuxError> {
 
-    for entry in dir_entries {
-        match entry {
-            Ok(file) => {
-                if file.path().is_dir() {
-                    deepest_dir = find_deepest_dir(&file.path())?;
-                }
-            },
-            Err(e) => Err(WinuxError::SystemError {err: e})?
+    let metadata = fs::symlink_metadata(path)
+        .map_err(|e| WinuxError::SystemError { err: e })?;
+
+    if metadata.is_dir() {
+        return Err(WinuxError::DefaultError {
+            msg: "Path provided was a directory, use -r if this was intentional".to_string()
+        });
+    }
+
+    if confirm {
+        let msg = format!("Remove {}?", path.display());
+
+        if !await_user_approval_y_or_n(msg)? {
+            return Ok(false);
         }
     }
 
-    Ok(deepest_dir)
+    match fs::remove_file(path) {
+        Ok(_) => Ok(true),
+
+        Err(e) if force && e.kind() == std::io::ErrorKind::NotFound => {
+            Ok(false)
+        }
+
+        Err(e) => Err(WinuxError::RmError {
+            file: path.to_string_lossy().to_string(),
+            rm_files: rm_files.to_owned(),
+            err: e,
+        }),
+    }
 }

@@ -3,12 +3,13 @@ use std::{io, path};
 use crate::helper::print_vec_of_string;
 
 #[allow(dead_code)]
-pub enum WinuxError { //TODO: Make new error for rm with message "Unable to remove file {file}, files deleted: {files vec}, see cause below:\n {Error}"
+pub enum WinuxError { 
     PathNotFound {path: PathBuf},
     SystemError {err: io::Error},
     DefaultError {msg: String},
     ExpectedDir,
     RmError {file: String, rm_files: Vec<String>, err: io::Error},
+    RmRecursiveError {folder: String, err: io::Error},
     UnrecognizedCommand {cmd: String}
 }
 
@@ -29,6 +30,7 @@ impl WinuxError {
                 }
                 eprintln!("With root cause: {}", err)
             },
+            WinuxError::RmRecursiveError {folder, err} => eprintln!("Error occurred while trying to delete folder: {} and its contents\n  With root cause: {}", folder, err),
             WinuxError::UnrecognizedCommand {cmd} => eprintln!("Unable to recognize command: {}", cmd)
         }
     }
