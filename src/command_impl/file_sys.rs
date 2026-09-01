@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::{expect_dir_or_error, await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir};
+use crate::helper::{await_user_approval_y_or_n, build_metadata, filter_hidden_files, parse_read_dir};
 
 // +===== PWD Implementation =====+
 
@@ -225,26 +225,30 @@ impl Executable for RmStruct {
     }
 }
 
-fn handle_removal(confirm: bool, force: bool, path: &PathBuf, rm_files: &Vec<String>) -> Result <bool, WinuxError> {
+fn handle_removal(confirm: bool, force: bool, path: &PathBuf, rm_files: &[String]) -> Result <bool, WinuxError> {
     if force {
         match fs::remove_file(path) {
                     Ok(_) => Ok(true),
                     Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
-                    Err(e) => Err(WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: rm_files.clone(), err: e })?
+                    Err(e) => Err(WinuxError::RmError { file: path.to_string_lossy().parse().unwrap(), rm_files: rm_files.to_owned(), err: e })?
+                    
                 }
     } else if confirm {
         let msg = format!("Remove {}?", path.display());
 
         if await_user_approval_y_or_n(msg)? {
             fs::remove_file(path)
-                .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.clone(), err: e })?;
+                .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.to_owned(), err: e })?;
             Ok(true)
+
         } else {
             Ok(false)
+
         }
     } else {
         fs::remove_file(path)
-            .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.clone(), err: e })?;
+            .map_err(|e| WinuxError::RmError { file: path.to_string_lossy().to_string(), rm_files: rm_files.to_owned(), err: e })?;
         Ok(true)
+
     }
 }

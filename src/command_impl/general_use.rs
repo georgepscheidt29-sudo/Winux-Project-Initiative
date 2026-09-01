@@ -37,11 +37,15 @@ impl Executable for UnrecognisedStruct {
     }
 }
 
-
+use crate::helper::find_deepest_dir;
+use std::path::PathBuf;
 pub struct TestStruct {}
 
 impl Executable for TestStruct {
     fn execute(&self) -> Result<RunResult, WinuxError> {
+        let path: PathBuf = PathBuf::from("folder1");
+        println!("{}", find_deepest_dir(&path)?.display());
+
         Ok(RunResult::Continue)
     }
 }
