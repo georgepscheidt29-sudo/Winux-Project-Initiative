@@ -183,7 +183,7 @@ pub fn expect_dir_or_error(path: &PathBuf) -> Result<bool, WinuxError> {
 }
 
 pub fn find_deepest_dir(starting_path: &PathBuf) -> Result<PathBuf, WinuxError> {
-    let mut dir_entries = parse_read_dir(fs::read_dir(starting_path)
+    let dir_entries = parse_read_dir(fs::read_dir(starting_path)
         .map_err(|e| WinuxError::SystemError {err: e})?);
     let mut deepest_dir: PathBuf = starting_path.to_owned(); 
 
@@ -191,9 +191,7 @@ pub fn find_deepest_dir(starting_path: &PathBuf) -> Result<PathBuf, WinuxError> 
         match entry {
             Ok(file) => {
                 if file.path().is_dir() {
-                    dir_entries = parse_read_dir(fs::read_dir(file.path())
-                        .map_err(|e| WinuxError::SystemError {err: e})?);
-                    deepest_dir = file.path();
+                    deepest_dir = find_deepest_dir(&file.path())?;
                 }
             },
             Err(e) => Err(WinuxError::SystemError {err: e})?
@@ -201,5 +199,4 @@ pub fn find_deepest_dir(starting_path: &PathBuf) -> Result<PathBuf, WinuxError> 
     }
 
     Ok(deepest_dir)
-
 }
