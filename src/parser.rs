@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use crate::command_impl::command_builder::BuiltCommand;
-use crate::command_impl::file_sys::{CdStruct, LsStruct, MkDirStruct, PwdStruct, RmStruct, TouchStruct};
+use crate::command_impl::file_sys::{CdStruct, CpStruct, LsStruct, MkDirStruct, PwdStruct, RmStruct, TouchStruct};
 use crate::command_impl::general_use::{ClearStruct, EmptyStruct, ExitStruct, TestStruct, UnrecognisedStruct};
-use crate::helper::{resolve_args_and_path, resolve_args_and_path_list, resolve_path_or_none};
+use crate::helper::{resolve_args_and_path, resolve_args_and_path_list, resolve_path_or_none, resolve_path_vec};
 
 pub fn command_parser(command:String) -> (String, Vec<String>) {
     let parsed_command_raw: Vec<&str> = command.split(" ").collect();
@@ -36,10 +36,6 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
                 path: resolved_path,
             }) },
 
-        "clear" => {BuiltCommand::Clear(ClearStruct {})},
-
-        "exit" => BuiltCommand::Exit(ExitStruct {}),
-
         "mkdir" => {
             let resolved_args = resolve_args_and_path(&params);
             let possible_args: Option<String>= resolved_args.0;
@@ -67,27 +63,30 @@ pub fn build_command( raw_cmd: (String, Vec<String>) ) -> BuiltCommand {
             let possible_args: Option<String>= resolved_args.0;
             let possible_path: Option<Vec<String>> = resolved_args.1;
 
-            let mut temp_path_list: Vec<Option<PathBuf>> = Vec::new();
-            let mut resolved_path_vec: Option<Vec<PathBuf>> = Some(Vec::new());
-
-            match possible_path {
-                Some(p) => {
-                    for path in p {
-                        temp_path_list.push(resolve_path_or_none( Some(&path)))
-                    }
-                },
-                None => {resolved_path_vec = None}
-            }
-
-            for p in temp_path_list.into_iter().flatten() {
-                resolved_path_vec.as_mut().unwrap().push(p)
-            }
+            let resolved_path_vec = resolve_path_vec(possible_path);
 
            BuiltCommand::Rm(RmStruct{
                args: possible_args,
                path: resolved_path_vec
            })
+        },
+
+        "cp" => {
+            let resolved_args = resolve_args_and_path_list(&params);
+            let possible_args: Option<String>= resolved_args.0;
+            let possible_path: Option<Vec<String>> = resolved_args.1;
+
+            let resolved_path_vec = resolve_path_vec(possible_path);
+
+            BuiltCommand::Cp(CpStruct {
+                args: possible_args,
+                paths: resolved_path_vec
+            })
         }
+
+        "clear" => {BuiltCommand::Clear(ClearStruct {})},
+
+        "exit" => BuiltCommand::Exit(ExitStruct {}),
 
         "" => BuiltCommand::Empty(EmptyStruct {}),
 

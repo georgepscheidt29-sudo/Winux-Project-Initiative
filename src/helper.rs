@@ -210,8 +210,8 @@ pub fn rm_file(
 
 pub fn resolve_path_vec(unresolved_vec: Option<Vec<String>>) -> Option<Vec<PathBuf>> {
     let mut resolved_path_vec: Vec<PathBuf> = Vec::new();
-    
-    match unresolved_vec { 
+
+    match unresolved_vec {
         Some(vec) => {
             for path in vec {
                 resolved_path_vec.push(PathBuf::from(path));
@@ -219,6 +219,18 @@ pub fn resolve_path_vec(unresolved_vec: Option<Vec<String>>) -> Option<Vec<PathB
         },
         None => return None,
     }
-    
+
     Some(resolved_path_vec)
+}
+
+pub fn copy_file(file: PathBuf, destination: PathBuf) -> Result<(), WinuxError> {
+
+    if destination.is_dir() {
+        fs::copy(&file, &destination).map_err(|e| WinuxError::SystemError {err: e })?;
+    } else {
+
+    }
+
+
+    Ok(())
 }

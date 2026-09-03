@@ -22,7 +22,7 @@ impl Executable for PwdStruct {
     }
 }
 
-// +===== CD Implementation =====+
+// ===== CD Implementation =====
 
 pub(crate) struct CdStruct {
     pub(crate) path: Option<PathBuf>
@@ -41,7 +41,7 @@ impl Executable for CdStruct {
     }
 }
 
-// +===== LS Implementation =====+
+// ===== LS Implementation =====
 
 pub struct LsStruct {
     pub(crate) args: Option<String>,
@@ -109,7 +109,7 @@ impl Executable for LsStruct {
     }
 }
 
-// +===== MKDIR Implementation =====+
+// ===== MKDIR Implementation =====
 
 pub struct MkDirStruct {
     pub(crate) args: Option<String>,
@@ -141,7 +141,7 @@ impl Executable for MkDirStruct {
     }
 }
 
-// +===== TOUCH Implementation =====+
+// ===== TOUCH Implementation =====
 
 pub struct TouchStruct {
     pub(crate) path: Option<PathBuf>,
@@ -170,6 +170,8 @@ impl Executable for TouchStruct {
         Ok(RunResult::Continue)
     }
 }
+
+// ===== RM Implementation =====
 
 pub struct RmStruct {
     pub(crate) args: Option<String>,
@@ -251,4 +253,34 @@ fn handle_removal_recursive(
         .map_err(|e| WinuxError::SystemError { err: e })?;
 
     Ok(true)
+}
+
+
+// ===== CP Implementation =====
+
+pub struct CpStruct {
+    pub(crate) args: Option<String>,
+    pub(crate) paths: Option<Vec<PathBuf>>,
+}
+
+impl Executable for CpStruct {
+    fn execute(&self) -> Result<RunResult,WinuxError> {
+        let args = match &self.args {
+            Some(a) => a.to_owned(),
+            None => String::from("")
+        };
+        
+        let paths = match &self.paths {
+            Some(p) => p.to_owned(),
+            None => return Err(WinuxError::DefaultError {msg: "Command Cp expects at least 2 paths, none were provided".to_string()})
+        };
+        
+        if paths.len() < 2 { 
+            return Err(WinuxError::DefaultError {msg: "Command Cp expects at least 2 paths".to_string()})
+        }
+        
+        
+        
+        Ok(RunResult::Continue)
+    }
 }
