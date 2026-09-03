@@ -1,4 +1,4 @@
-use std::path::{PathBuf};
+use std::path::{Path, PathBuf};
 use std::{thread};
 use std::time::Duration;
 use std::fs;
@@ -206,4 +206,19 @@ pub fn rm_file(
             err: e,
         }),
     }
+}
+
+pub fn resolve_path_vec(unresolved_vec: Option<Vec<String>>) -> Option<Vec<PathBuf>> {
+    let mut resolved_path_vec: Vec<PathBuf> = Vec::new();
+    
+    match unresolved_vec { 
+        Some(vec) => {
+            for path in vec {
+                resolved_path_vec.push(PathBuf::from(path));
+            }
+        },
+        None => return None,
+    }
+    
+    Some(resolved_path_vec)
 }
