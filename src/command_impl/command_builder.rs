@@ -34,7 +34,7 @@ impl BuiltCommand {
             BuiltCommand::MkDir(c) => {c.execute()},
             BuiltCommand::Touch(c) => {c.execute()},
             BuiltCommand::Rm(c) => {c.execute()},
-            BuiltCommand::Cp(_c) => {unimplemented!()},
+            BuiltCommand::Cp(c) => {c.execute()},
 
             // General Commands
             BuiltCommand::Clear(c) => {c.execute()},

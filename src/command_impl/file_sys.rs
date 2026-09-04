@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::{build_metadata, filter_hidden_files, parse_read_dir, rm_file, copy_file}; // TODO: Make this a general import and refactor helper function usage
+use crate::helper;
 
 // +===== PWD Implementation =====+
 
@@ -76,14 +76,14 @@ impl Executable for LsStruct {
         let usable_entries: Vec<std::io::Result<DirEntry>> = if args.contains("a") {
             dir_list.push(String::from(".."));
             dir_list.push(String::from("."));
-            parse_read_dir(entries)
+            helper::parse_read_dir(entries)
 
         } else {
-            filter_hidden_files(entries)
+            helper::filter_hidden_files(entries)
         };
 
         if args.contains("l") {
-            string_to_print = build_metadata(usable_entries)?;
+            string_to_print = helper::build_metadata(usable_entries)?;
 
         } else {
             for entry in usable_entries {
@@ -198,7 +198,7 @@ impl Executable for RmStruct {
 
         for path in path_list {
             if !recursive {
-                if rm_file(confirm, force, &path, &removed_files)? {
+                if helper::rm_file(confirm, force, &path, &removed_files)? {
                     removed_files.push(
                         path::absolute(path)
                             .map_err(|e| WinuxError::SystemError { err: e })?
@@ -229,7 +229,7 @@ fn handle_removal_recursive(
     rm_files: &[String],
 ) -> Result<bool, WinuxError> {
 
-    let dir_entries = parse_read_dir(
+    let dir_entries = helper::parse_read_dir(
         fs::read_dir(path)
             .map_err(|e| WinuxError::SystemError { err: e })?
     );
@@ -245,7 +245,7 @@ fn handle_removal_recursive(
         if metadata.is_dir() {
             handle_removal_recursive(confirm, force, &e, rm_files)?;
         } else {
-            rm_file(confirm, force, &e, rm_files)?;
+            helper::rm_file(confirm, force, &e, rm_files)?;
         }
     }
 
@@ -281,31 +281,39 @@ impl Executable for CpStruct {
         
         let destination: PathBuf = paths.remove(paths.len() - 1);
 
-        for path in paths {
-            copy_file(&path, &destination)?;
+        if args.contains("r") {
+            for path in paths {
+                handle_copy_recursive(&path, &destination)?;
+            }
+        } else {
+            for path in paths {
+                helper::copy_file(&path, &destination)?;
+            }
         }
+
+
 
         Ok(RunResult::Continue)
     }
 }
 
-fn handle_copy_recursive(path: PathBuf, destination: PathBuf) -> Result<(), WinuxError> {
-    let destination = copy_file(&path, &destination)?;
+fn handle_copy_recursive(path: &PathBuf, destination: &PathBuf) -> Result<(), WinuxError> {
+    let destination = helper::copy_file(&path, &destination)?;
 
     if !path.is_dir() {
         return Ok(())
     } else {
-        let parsed_files = parse_read_dir(fs::read_dir(path)
+        let parsed_files = helper::parse_read_dir(fs::read_dir(path)
             .map_err(|e| WinuxError::SystemError{err: e})?
         );
 
         for file in parsed_files {
             let f = file.map_err(|e| WinuxError::SystemError{err: e})?.path();
 
-            let destination = copy_file(&f, &destination)?;
+            let destination = helper::copy_file(&f, &destination)?;
 
             if f.is_dir() {
-                handle_copy_recursive(f, destination)?;
+                handle_copy_recursive(&f, &destination)?;
             }
         }
     }
