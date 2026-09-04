@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use crate::run_result::{RunResult};
 use crate::command_impl::command_builder::Executable;
 use crate::error::WinuxError;
-use crate::helper::{build_metadata, filter_hidden_files, parse_read_dir, rm_file};
+use crate::helper::{build_metadata, filter_hidden_files, parse_read_dir, rm_file, copy_file}; // TODO: Make this a general import and refactor helper function usage
 
 // +===== PWD Implementation =====+
 
@@ -279,8 +279,31 @@ impl Executable for CpStruct {
             return Err(WinuxError::DefaultError {msg: "Command Cp expects at least 2 paths".to_string()})
         }
         
-        
-        
+        let destination: PathBuf = paths.remove(paths.len() - 1);
+
+        for path in paths {
+            copy_file(path, destination)?;
+        }
+
         Ok(RunResult::Continue)
+    }
+}
+
+fn handle_copy_recursive(path: PathBuf, destination: PathBuf) -> Result<(), WinuxError> {
+    let  destination = copy_file(path, destination)?;
+
+    if !path.is_dir(){
+        return ()
+    } else {
+        let files_to_copy = parse_read_dir(fs::read_dir(path)
+            .map_err(|e| WinuxError::SystemError {err: e})?);
+
+        for file in files_to_copy {
+            let destination = copy_file(file, destination);
+
+            if file.is_dir {
+                handle_copy_recursive(file, destination)?;
+            }
+        }
     }
 }

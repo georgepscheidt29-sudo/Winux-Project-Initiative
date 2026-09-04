@@ -223,14 +223,15 @@ pub fn resolve_path_vec(unresolved_vec: Option<Vec<String>>) -> Option<Vec<PathB
     Some(resolved_path_vec)
 }
 
-pub fn copy_file(file: PathBuf, destination: PathBuf) -> Result<(), WinuxError> {
+pub fn copy_file(file: PathBuf, destination: PathBuf) -> Result<PathBuf, WinuxError> {
 
-    if destination.is_dir() {
-        fs::copy(&file, &destination).map_err(|e| WinuxError::SystemError {err: e })?;
+    fs::copy(&file, &destination).map_err(|e| WinuxError::SystemError {err: e })?;
+    
+    if file.is_dir {
+        return destination.push(file);
     } else {
-
+        return destination;
     }
-
 
     Ok(())
 }
