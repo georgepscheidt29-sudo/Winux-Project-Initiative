@@ -270,7 +270,7 @@ impl Executable for CpStruct {
             None => String::from("")
         };
         
-        let paths = match &self.paths {
+        let mut paths = match &self.paths {
             Some(p) => p.to_owned(),
             None => return Err(WinuxError::DefaultError {msg: "Command Cp expects at least 2 paths, none were provided".to_string()})
         };
@@ -282,7 +282,7 @@ impl Executable for CpStruct {
         let destination: PathBuf = paths.remove(paths.len() - 1);
 
         for path in paths {
-            copy_file(path, destination)?;
+            copy_file(&path, &destination)?;
         }
 
         Ok(RunResult::Continue)
@@ -290,20 +290,25 @@ impl Executable for CpStruct {
 }
 
 fn handle_copy_recursive(path: PathBuf, destination: PathBuf) -> Result<(), WinuxError> {
-    let  destination = copy_file(path, destination)?;
+    let destination = copy_file(&path, &destination)?;
 
-    if !path.is_dir(){
-        return ()
+    if !path.is_dir() {
+        return Ok(())
     } else {
-        let files_to_copy = parse_read_dir(fs::read_dir(path)
-            .map_err(|e| WinuxError::SystemError {err: e})?);
+        let parsed_files = parse_read_dir(fs::read_dir(path)
+            .map_err(|e| WinuxError::SystemError{err: e})?
+        );
 
-        for file in files_to_copy {
-            let destination = copy_file(file, destination);
+        for file in parsed_files {
+            let f = file.map_err(|e| WinuxError::SystemError{err: e})?.path();
 
-            if file.is_dir {
-                handle_copy_recursive(file, destination)?;
+            let destination = copy_file(&f, &destination)?;
+
+            if f.is_dir() {
+                handle_copy_recursive(f, destination)?;
             }
         }
     }
+
+    Ok(())
 }

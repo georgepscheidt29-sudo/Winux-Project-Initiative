@@ -211,27 +211,23 @@ pub fn rm_file(
 pub fn resolve_path_vec(unresolved_vec: Option<Vec<String>>) -> Option<Vec<PathBuf>> {
     let mut resolved_path_vec: Vec<PathBuf> = Vec::new();
 
-    match unresolved_vec {
-        Some(vec) => {
-            for path in vec {
-                resolved_path_vec.push(PathBuf::from(path));
-            }
-        },
-        None => return None,
+    let vec = unresolved_vec?;
+    for path in vec {
+        resolved_path_vec.push(PathBuf::from(path));
     }
 
     Some(resolved_path_vec)
 }
 
-pub fn copy_file(file: PathBuf, destination: PathBuf) -> Result<PathBuf, WinuxError> {
+pub fn copy_file(file: &PathBuf, destination: &PathBuf) -> Result<PathBuf, WinuxError> {
 
     fs::copy(&file, &destination).map_err(|e| WinuxError::SystemError {err: e })?;
-    
-    if file.is_dir {
-        return destination.push(file);
-    } else {
-        return destination;
-    }
+    let mut new_destination = destination.to_owned();
 
-    Ok(())
+    if file.is_dir() {
+        new_destination.push(file);
+        Ok(new_destination.to_path_buf())
+    } else {
+        Ok(new_destination.to_path_buf())
+    }
 }
