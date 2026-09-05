@@ -291,8 +291,6 @@ impl Executable for CpStruct {
             }
         }
 
-
-
         Ok(RunResult::Continue)
     }
 }

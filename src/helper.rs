@@ -219,15 +219,18 @@ pub fn resolve_path_vec(unresolved_vec: Option<Vec<String>>) -> Option<Vec<PathB
     Some(resolved_path_vec)
 }
 
-pub fn copy_file(file: &PathBuf, destination: &PathBuf) -> Result<PathBuf, WinuxError> {
 
-    fs::copy(&file, &destination).map_err(|e| WinuxError::SystemError {err: e })?;
+// TODO: New plan, whenever file is a directory, use create_dir(), and add checks to see if the destination exists, if not, assume it is a new name and copy to the same folder under the new name
+pub fn copy_file(file: &PathBuf, destination: &PathBuf) -> Result<PathBuf, WinuxError> {
     let mut new_destination = destination.to_owned();
 
+    new_destination.push(file.file_name().unwrap());
+
+    fs::copy(&file, &new_destination).map_err(|e| WinuxError::SystemError {err: e })?;
+
     if file.is_dir() {
-        new_destination.push(file);
         Ok(new_destination.to_path_buf())
     } else {
-        Ok(new_destination.to_path_buf())
+        Ok(destination.to_path_buf())
     }
 }
